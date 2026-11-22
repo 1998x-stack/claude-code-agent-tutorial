@@ -57,3 +57,12 @@ Publish `site/` using GitHub Pages Actions workflow; confirm deployment rather t
 - The minimal integrated sample accepts only ReadFile and ProposeEdit. Never grant shell or filesystem writes based on model output. If optional live mode is mentioned, it needs explicit user credentials and workspace and is not covered by CI.
 - `model_ended_not_verified` means the Messages API turn finished, not that changes were applied or tested. External check and human approval are distinct required gates.
 - Homepage, canonical chapter metadata, README, archived originals, static validation, and browser screenshots must remain synchronized. Browser coverage: homepage + 28 chapters × 1440/768/390/360 = 116 views.
+
+## Cross-platform security review
+- Workspace paths must reject POSIX and Windows absolute/drive paths, alternate data streams, control characters, symlinks, and case-folded sensitive names. Bound actual bytes read, not only a prior stat.
+- Read-only permission policy is a fixed Read/Grep allowlist. Never let user configuration relabel Write/Edit/Shell as safe reads. Approval flags must be exact booleans.
+- ApprovalGateway labels such as approved_by are not authentication or signatures. Its replay set is in-memory and process-local; production requires authenticated host UI, durable atomic nonce consumption and expiry/revocation.
+- SandboxManifest is only preflight metadata; it never enforces an OS boundary. Validate boolean types, hostnames and cross-platform paths, then enforce with a real sandbox.
+- Skill supporting-file readers reject Windows drive/backslash/ADS paths, traversal, symlinks and over-limit reads; parser supports a subset of YAML only.
+- MCP modern 2026-07-28 results require resultType complete/input_required. Keep strict numeric IDs/error codes and never accept bool as int. This sample is not a transport or full MRTR driver.
+- Handoff/checkpoint SHA-256 detects accidental corruption only; no authenticity. Bound reads, reject duplicate JSON keys, and revalidate workspace revision before resuming.

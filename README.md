@@ -84,3 +84,17 @@ python3 tools/browser_qa.py --output qa-output
 ```
 
 **能力边界：** 这是一组教学用 Harness 与安全的只读编程演示，并非可直接部署的通用自主编码平台。真实编辑、Shell、网络/MCP、工作区沙箱与持续执行必须借助独立权限、安全运行时和验收流程。
+
+## 2026-11-23 第二轮安全复审
+
+除第 26–28 章的长任务与 Coding Agent 收官复审外，安全相关示例也完成了一轮输入边界加固：
+
+- `workspace_tools.py`：跨平台敏感路径、Windows 盘符/ADS、控制字符、大小写变体和 UTF-8 字节读取上限。
+- `permission_policy.py`：read-only allowlist 不可被配置扩展为写入工具；布尔审批必须使用真正的 bool。
+- `permission_gateway.py`：审批字段严格校验；明确 approved_by 只是标签，防重放仅在单进程内存有效。
+- `sandbox_manifest.py`：严格布尔、主机名/IP 和跨平台相对路径验证；仍只是 preflight，不是 OS sandbox。
+- `skill_runtime.py`：重复 frontmatter 字段、Windows 路径、symlink 和文件大小上限。
+- `mcp_protocol.py`：现代/旧版 envelope 的 ID、params、错误码与有限 JSON 值检查。
+- `handoff_journal.py`：bounded read、重复 JSON key、schema/字段类型与 checksum 校验。
+
+这些都是教学边界强化，仍不提供身份认证、OS 级隔离、抗恶意文件系统竞态或完整产品 SDK。
