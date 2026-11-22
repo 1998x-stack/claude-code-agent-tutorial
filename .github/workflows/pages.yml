@@ -17,6 +17,15 @@ jobs:
         with: {python-version: '3.12'}
       - run: python3 tools/validate_site.py
       - run: python3 -m unittest discover -s examples -p 'test_*.py'
+      - name: Smoke-test offline entry points
+        run: |
+          python3 examples/long_running_contract.py
+          python3 examples/completion_gate.py
+          python3 examples/safe_coding_agent.py demo
+          python3 examples/permission_gateway.py
+          python3 examples/sandbox_manifest.py
+          python3 examples/mcp_protocol.py
+          python3 -m compileall -q examples tools
   deploy:
     needs: checks
     runs-on: ubuntu-latest

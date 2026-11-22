@@ -20,8 +20,7 @@ class SkillRuntimeTests(unittest.TestCase):
         self.root = Path(self.tmp.name)
 
     def test_metadata_discovery_and_lazy_body_load(self):
-        write_skill(self.root, "review",
-                    "name: review\ndescription: Review source code")
+        write_skill(self.root, "review", "name: review\ndescription: Review source code")
         catalog = SkillCatalog(self.root)
         found = catalog.discover()
         self.assertEqual(found[0].description, "Review source code")
@@ -37,7 +36,6 @@ class SkillRuntimeTests(unittest.TestCase):
         self.assertFalse(catalog.can_invoke("deploy", "model"))
         with self.assertRaises(PermissionError):
             catalog.invoke("deploy", "model")
-
         write_skill(self.root, "background",
                     "name: background\ndescription: Background knowledge\n"
                     "user-invocable: false")
@@ -56,7 +54,6 @@ class SkillRuntimeTests(unittest.TestCase):
         self.assertEqual(doc.metadata.agent, "Explore")
         self.assertFalse(doc.metadata.background)
         self.assertEqual(doc.metadata.allowed_tools, ("Read", "Grep"))
-        # This catalog never grants tools or creates a subagent.
         self.assertIn("Read files", doc.body)
 
     def test_bad_frontmatter_is_reported_not_executed(self):
@@ -67,12 +64,20 @@ class SkillRuntimeTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             catalog.invoke("broken", "user")
 
-    def test_reject_traversal_symlink_and_external_resource(self):
+    def test_duplicate_frontmatter_key_is_rejected(self):
+        write_skill(self.root, "duplicate",
+                    "name: duplicate\ndescription: First\ndescription: Second")
+        catalog = SkillCatalog(self.root)
+        self.assertEqual(catalog.discover(), ())
+        self.assertIn("duplicate frontmatter key", catalog.errors[0])
+
+    def test_reject_traversal_windows_paths_symlink_and_external_resource(self):
         folder = write_skill(self.root, "safe", "name: safe\ndescription: Safe")
         (folder / "reference.md").write_text("reference", encoding="utf-8")
         catalog = SkillCatalog(self.root)
         self.assertEqual(catalog.read_supporting_file("safe", "reference.md"), "reference")
-        for path in ("../outside", "/etc/passwd", "a/../../secret"):
+        for path in ("../outside", "/etc/passwd", "a/../../secret",
+                     "C:/Windows/win.ini", r"..\outside", "file.txt:secret", "bad\npath"):
             with self.subTest(path=path), self.assertRaises(ValueError):
                 catalog.read_supporting_file("safe", path)
         (self.root / "alias").symlink_to(folder, target_is_directory=True)
@@ -91,6 +96,8 @@ class SkillRuntimeTests(unittest.TestCase):
             catalog.invoke("forked", "user")
         with self.assertRaises(ValueError):
             catalog.invoke("review", "system")
+        with self.assertRaises(ValueError):
+            catalog.invoke("review", [])
 
 
 if __name__ == "__main__":

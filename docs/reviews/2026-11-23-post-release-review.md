@@ -51,3 +51,30 @@ python3 examples/completion_gate.py
 ```
 
 必须以本复审 PR 的 GitHub Actions 实际结果为准，不预先宣称通过。
+
+## 第二轮：早期安全/协议示例复审
+
+### 额外发现
+- Workspace 的敏感目录匹配大小写敏感；Windows drive-relative/ADS 路径没有显式拒绝；文件大小仅在 stat 后判断，读取可能因竞态超出预算。
+- PermissionPolicy 可被配置成把 Write 放入 safe_reads；approved_by_user 的字符串真值可冒充确认。
+- PermissionGateway 的 approved_by 是自由字符串、消费记录只保存在进程内存；之前说明未充分区分“请求指纹匹配”与“真实身份认证”。
+- SandboxManifest 接受字符串布尔配置，并且 host/path 检查没有覆盖 Windows 路径和 DNS 名称格式。
+- SkillCatalog 支持的 frontmatter 子集会覆盖重复键，supporting file 路径检查没有明确拒绝 Windows drive/backslash。
+- MCP envelope 对 bool-as-int、非对象 params 和 JSON NaN/Infinity 的拒绝不够严格。
+- HandoffJournal 的加载没有大小上限、重复 JSON key 检查与字段严格校验。
+
+### 修复
+- Workspace 增加大小写折叠敏感名、Windows drive/ADS/控制字符拒绝，读取使用有上限的字节流。
+- PermissionPolicy 限定 safe_reads 为 Read/Grep；拒绝非 bool 的审批标志。
+- PermissionGateway 校验审批字段并在文档中明确身份认证与持久防重放由宿主负责。
+- SandboxManifest 严格 bool、DNS/IP 和跨平台路径校验。
+- SkillCatalog 拒绝重复 frontmatter 字段并强化 supporting-file 路径与字节上限。
+- MCP envelope 严格检查 ID/error code 类型、params 对象和 JSON 有限数值。
+- HandoffJournal 增加有界读取、重复键拒绝、schema/字段校验和摘要常量时间比较。
+
+### 明确不提供的安全保证
+- Workspace / SkillCatalog 仍可能受同机恶意进程的 TOCTOU 竞态与硬链接影响；不是 OS sandbox。
+- PermissionGateway 的 approved_by 不是身份认证；_consumed 仅在进程生命周期内有效。
+- SandboxManifest 只是声明预检，不执行命令，也不约束内核。
+- Skill frontmatter parser 是受限子集，不是完整 YAML parser。
+- Handoff / FeatureLedger 的 SHA-256 不是签名，不能证明写入者身份。

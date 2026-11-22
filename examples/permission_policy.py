@@ -10,6 +10,8 @@ from typing import Literal
 
 Decision = Literal["allow", "ask", "deny"]
 Mode = Literal["manual", "read_only", "unattended"]
+KNOWN_TOOLS = frozenset({"Read", "Grep", "Write", "Edit", "BashPreview"})
+READ_ONLY_TOOLS = frozenset({"Read", "Grep"})
 
 
 @dataclass(frozen=True)
@@ -18,31 +20,34 @@ class Policy:
     ask: frozenset[str] = frozenset()
     allow: frozenset[str] = frozenset()
     mode: Mode = "manual"
-    safe_reads: frozenset[str] = frozenset({"Read", "Grep"})
+    safe_reads: frozenset[str] = READ_ONLY_TOOLS
+
+    def __post_init__(self):
+        if not isinstance(self.mode, str) or self.mode not in {"manual", "read_only", "unattended"}:
+            raise ValueError("unsupported teaching mode")
+        for field_name in ("deny", "ask", "allow", "safe_reads"):
+            values = getattr(self, field_name)
+            if not isinstance(values, frozenset) or any(
+                    not isinstance(tool, str) or tool not in KNOWN_TOOLS for tool in values):
+                raise ValueError(f"{field_name} must be a frozenset of known tool names")
+        if not self.safe_reads <= READ_ONLY_TOOLS:
+            raise ValueError("safe_reads may contain only Read and Grep")
 
     def decide(self, tool: str, *, approved_by_user: bool = False) -> Decision:
-        if not isinstance(tool, str) or not tool:
+        if type(approved_by_user) is not bool:
             return "deny"
-        if self.mode not in ("manual", "read_only", "unattended"):
-            raise ValueError("unsupported teaching mode")
-        # This demo accepts only a known set of tools; no name-pattern parser.
-        known = {"Read", "Grep", "Write", "Edit", "BashPreview"}
-        if tool not in known:
+        if not isinstance(tool, str) or not tool or tool not in KNOWN_TOOLS:
             return "deny"
         if tool in self.deny:
             return "deny"
-        # In this *teaching* read-only mode, explicit ask cannot override
-        # the resource boundary, even with a user confirmation.
+        # The read-only boundary is immutable: configuration cannot relabel
+        # Write/Edit/BashPreview as a safe read.
         if self.mode == "read_only" and tool not in self.safe_reads:
             return "deny"
         if tool in self.ask:
-            # An explicit ask requires a fresh user decision, even when allow
-            # contains the same tool. A prior approval is scoped to this call.
             if self.mode == "unattended":
                 return "deny"
             return "allow" if approved_by_user else "ask"
-        if self.mode == "read_only" and tool not in self.safe_reads:
-            return "deny"
         if tool in self.allow or tool in self.safe_reads:
             return "allow"
         if self.mode == "unattended":
