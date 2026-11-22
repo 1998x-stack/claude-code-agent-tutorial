@@ -8,8 +8,8 @@
 
 | 阶段 | 章节 | 说明 |
 |---|---|---|
-| 第一阶段 | 01–10 | 演进、Tool Use、工具权限、Prompt、状态机、DAG 规划和上下文管理；已完成精修 |
-| 第二阶段 | 11–21 | 上下文管理、子 Agent、权限、Skills、MCP；迁移保留，待事实复审 |
+| 第一阶段 | 01–15 | Agent Loop、Tool Use、工具、Prompt、上下文、Sub-Agent、Skills 与权限；已完成精修 |
+| 第二阶段 | 16–21 | 权限实现、Bash 安全、MCP 与 Context Engineering；迁移保留，待事实复审 |
 | 第三阶段 | 22–28 | Harness 模式、可观测性、优化与完整系统；迁移保留，待事实复审 |
 
 ## 目录
@@ -18,9 +18,9 @@
 - `site/chapters/01.html` … `28.html`：规范的章节 URL。
 - `site/assets/css`：首页、文章设计系统。
 - `site/assets/svg`：原创、独立的教学图解。
-- `examples/`：可运行样例和单元测试，包括 Workspace、Prompt、Agent Loop、TaskBoard 和 Context Budget。
+- `examples/`：可运行样例和单元测试，包括 Workspace、Prompt、Agent Loop、TaskBoard、Context Budget、Handoff、Sub-Agent Scheduler、Skills Catalog 与 Permission Policy。
 - `tools/validate_site.py`：本地与 CI 静态检查。
-- `archive/initial/`：第 01–10 章重写前的原始版本及旧首页。
+- `archive/initial/`：第 01–15 章重写前的原始版本及旧首页。
 - `NN.html` / `site/NN.html`：历史直链兼容跳转。
 - `.github/workflows/pages.yml`：将 `site/` 发布到 Pages。
 
@@ -45,3 +45,7 @@ python3 -m unittest discover -s examples -p 'test_*.py'
 - 不运行模型生成的任意 Shell，不提交密钥；带副作用的工具必须有显式批准与执行边界。
 
 官方参考：[Claude Code docs](https://code.claude.com/docs/en/overview) · [Tool Use docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview)。可视化制作原则参照 [Olah-style-posts](https://github.com/1998x-stack/Olah-style-posts)，仅借鉴渐进解释方法。
+
+## Claude Code 的 AGENTS.md 兼容性
+
+本仓库以 `AGENTS.md` 为跨工具规范，并提供 `CLAUDE.md` 中的 `@AGENTS.md` 导入以兼容使用 Claude Code 的场景。较新的 Claude Code 支持直接读取 `AGENTS.md`，但默认读取策略受到上层 `CLAUDE.md`、用户设置与版本影响；具体请核对[官方记忆文档](https://code.claude.com/docs/en/memory)。

@@ -22,6 +22,13 @@ Tutorial code is not production-safe unless explicitly engineered and tested so.
 
 ## Maintenance
 Chapter slugs `01`–`28` are stable. New chapters 06–10 use guarded workspace tools, layered prompts, event state machines, dependency DAGs and checkpoint budgeting. Preserve root and site redirects for old URLs. Update `site/courses.json`, homepage and links when changing chapter titles.
-Original chapters 01–10 archived at `archive/initial/`. Chapters 01–10 are refined; chapters 11–28 remain legacy and need technical review.
+Original chapters 01–15 archived at `archive/initial/`. Chapters 01–15 are refined; chapters 16–28 remain legacy and need technical review.
 Run `python3 tools/validate_site.py`, offline unit tests, and browser checks at 1440/768/390/360 with JS errors, horizontal overflow, figures, keyboard focus and nav if tooling permits. Record skipped browser steps, do not invent QA status.
 Publish `site/` using GitHub Pages Actions workflow; confirm deployment rather than assuming.
+
+## Skills and instructions, version scope
+- The canonical cross-tool guide is AGENTS.md. CLAUDE.md imports it for Claude Code compatibility; do not create a second conflicting manual.
+- AGENTS.md auto-loading is version- and configuration-dependent. Read https://code.claude.com/docs/en/memory before declaring it loaded automatically.
+- Claude Code skill frontmatter `allowed-tools` can preapprove named tools during the invocation turn, subject to policy. Do not treat arbitrary skill text as permission; in the offline SkillCatalog, executable/permission fields are deliberately ignored.
+- Subagent context isolation is not an OS sandbox. Authorization must be independently checked at execution time.
+- Permission modes are version-sensitive; do not hardcode "seven modes" or assume auto/classifier is universally available.
