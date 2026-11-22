@@ -51,7 +51,8 @@ Publish `site/` using GitHub Pages Actions workflow; confirm deployment rather t
 ## Long-running, integrated coding and acceptance
 - Source Anthropic’s 2025 initializer/coding-session experiment and 2026 planner/generator/evaluator study precisely. Never describe them as guaranteed internal Claude Code implementation layers.
 - Session resume preserves conversation; worktree files, Git commits, evaluator reports, and checkpoints remain separate state carriers. Checkpoint hashes detect accidental modification, not adversarial forgery or identity.
-- A long-run feature begins not passed. Only evidence-bearing external evaluation may mark passed. State an actor-string in teaching code is NOT secure identity verification; production requires authenticated authorization.
+- A long-run feature begins not passed. The teaching ledger stores an opaque evidence reference and only checks its shape; it does NOT dereference reports or run tests. The caller must independently verify evidence before recording a verdict. An actor string is NOT identity authentication; production requires authenticated authorization.
+- The teaching Steering method only appends an audit note; it does not change scheduler order or task constraints unless a separate planner consumes the note and updates a versioned contract. The ledger is single-writer and fail-stops the project when any feature is blocked.
 - Kill switch and Steering are app-control contracts; cancellation must reach actual subprocesses, jobs, and external workers, not just toggle a Python boolean.
 - The minimal integrated sample accepts only ReadFile and ProposeEdit. Never grant shell or filesystem writes based on model output. If optional live mode is mentioned, it needs explicit user credentials and workspace and is not covered by CI.
 - `model_ended_not_verified` means the Messages API turn finished, not that changes were applied or tested. External check and human approval are distinct required gates.
