@@ -21,7 +21,7 @@ No model-generated shell commands via `shell=True`, no default unrestricted file
 Tutorial code is not production-safe unless explicitly engineered and tested so.
 
 ## Maintenance
-Chapter slugs `01`–`28` are stable. Preserve root and site redirects for old URLs. Update `site/courses.json`, homepage and links when changing chapter titles.
-Original early articles archived at `archive/initial/`. 06–28 were preserved as-is and require new technical review before promoting as refined.
+Chapter slugs `01`–`28` are stable. New chapters 06–10 use guarded workspace tools, layered prompts, event state machines, dependency DAGs and checkpoint budgeting. Preserve root and site redirects for old URLs. Update `site/courses.json`, homepage and links when changing chapter titles.
+Original chapters 01–10 archived at `archive/initial/`. Chapters 01–10 are refined; chapters 11–28 remain legacy and need technical review.
 Run `python3 tools/validate_site.py`, offline unit tests, and browser checks at 1440/768/390/360 with JS errors, horizontal overflow, figures, keyboard focus and nav if tooling permits. Record skipped browser steps, do not invent QA status.
 Publish `site/` using GitHub Pages Actions workflow; confirm deployment rather than assuming.

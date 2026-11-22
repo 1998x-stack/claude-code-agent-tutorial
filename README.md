@@ -8,8 +8,8 @@
 
 | 阶段 | 章节 | 说明 |
 |---|---|---|
-| 第一阶段 | 01–05 | 演进与研究边界、环境、Agent Loop、架构、Tool Use；本轮全篇重构 |
-| 第二阶段 | 06–21 | 工具、上下文、子 Agent、权限、Skills、MCP；迁移保留，待事实复审 |
+| 第一阶段 | 01–10 | 演进、Tool Use、工具权限、Prompt、状态机、DAG 规划和上下文管理；已完成精修 |
+| 第二阶段 | 11–21 | 上下文管理、子 Agent、权限、Skills、MCP；迁移保留，待事实复审 |
 | 第三阶段 | 22–28 | Harness 模式、可观测性、优化与完整系统；迁移保留，待事实复审 |
 
 ## 目录
@@ -18,9 +18,9 @@
 - `site/chapters/01.html` … `28.html`：规范的章节 URL。
 - `site/assets/css`：首页、文章设计系统。
 - `site/assets/svg`：原创、独立的教学图解。
-- `examples/`：可运行样例和单元测试。
+- `examples/`：可运行样例和单元测试，包括 Workspace、Prompt、Agent Loop、TaskBoard 和 Context Budget。
 - `tools/validate_site.py`：本地与 CI 静态检查。
-- `archive/initial/`：第一轮重写前的章节及首页。
+- `archive/initial/`：第 01–10 章重写前的原始版本及旧首页。
 - `NN.html` / `site/NN.html`：历史直链兼容跳转。
 - `.github/workflows/pages.yml`：将 `site/` 发布到 Pages。
 
@@ -32,6 +32,8 @@ python3 -m http.server 8000
 python3 tools/validate_site.py
 python3 -m unittest discover -s examples -p 'test_*.py'
 ```
+
+浏览器 QA（工作流运行，需要 Playwright Chromium）：`python3 tools/browser_qa.py --output qa-output`，自动生成页面截图与 JSON 报告。
 
 首次启用 Pages：仓库 Settings → Pages → Build and deployment → Source 选 **GitHub Actions**；推送 main 后工作流会验证并部署 `site/`。不要将存在 workflow 误认为已经发布成功。
 
