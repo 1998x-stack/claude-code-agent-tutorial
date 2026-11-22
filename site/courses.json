@@ -1,7 +1,7 @@
 {
   "title": "Claude Code 与 Coding Agent Harness：图解技术教程",
   "emoji": "🤖",
-  "subtitle": "28章，前20章完成精修，后8章待复审",
+  "subtitle": "28章，全章已完成事实复核与图示重构",
   "chapterCount": 28,
   "chapters": [
     {
@@ -226,89 +226,89 @@
     },
     {
       "num": "21",
-      "title": "实现 Skills 系统",
+      "title": "实现 Skills 系统：按需加载与预算截断",
       "topics": [
-        "SKILL.md解析器",
-        "触发匹配",
-        "动态Prompt构建",
-        "v4 Agent (550行)"
+        "技能生命周期",
+        "SKILL.md 元数据边界",
+        "相关度评分与预算截断",
+        "离线 SkillCatalog"
       ],
       "file": "chapters/21.html"
     },
     {
       "num": "22",
-      "title": "Harness 设计模式对比",
+      "title": "Harness 完成模式：谁来判断做完了",
       "topics": [
-        "3种Finish模式",
-        "Meta-Harness演进",
-        "Arize多模型对比",
-        "Adaptive Harness"
+        "隐式 / 显式 / 自适应完成",
+        "stop_reason 契约",
+        "有界轻推",
+        "移除不可核实基准"
       ],
       "file": "chapters/22.html"
     },
     {
       "num": "23",
-      "title": "Agent 调试与可观测性",
+      "title": "Agent 调试与可观测性：让失败可被追踪",
       "topics": [
-        "3层日志体系",
-        "Token消耗追踪",
-        "时间线可视化",
-        "可观测性面板"
+        "三层日志",
+        "Token 成本归因",
+        "tool_use_id 关联排错",
+        "时间线与面板"
       ],
       "file": "chapters/23.html"
     },
     {
       "num": "24",
-      "title": "性能优化实战",
+      "title": "性能优化：先测量，再让请求更少更稳",
       "topics": [
-        "Cache命中率调优",
-        "并行工具调用",
-        "Haiku vs Sonnet",
-        "端到端优化案例"
+        "四步优化闭环",
+        "前缀稳定的缓存",
+        "按依赖并行",
+        "分级模型与温度"
       ],
       "file": "chapters/24.html"
     },
     {
       "num": "25",
-      "title": "社区教程与工具生态",
+      "title": "社区生态与工具：如何筛选可信资源",
       "topics": [
-        "国内外教程全景",
-        "开源工具链",
-        "竞品对比",
-        "学习路径推荐"
+        "资源类型分辨",
+        "三道可验证问题",
+        "同类工具比较维度",
+        "学习路径与跟踪"
       ],
       "file": "chapters/25.html"
     },
     {
       "num": "26",
-      "title": "前沿趋势：Long-Running Agents",
+      "title": "长任务 Agent：把状态写到磁盘上",
       "topics": [
-        "Default-FAIL契约",
-        "Fresh-Context Evaluator",
-        "Kill Switch/Steering",
-        "Meta-Harness"
+        "四类长任务失效",
+        "跨会话 Handoff",
+        "Default-FAIL 证据门禁",
+        "文件式控制"
       ],
       "file": "chapters/26.html"
     },
     {
       "num": "27",
-      "title": "实战：搭建完整 Coding Agent",
+      "title": "实战：把模块装配成完整 Coding Agent",
       "topics": [
-        "10步模块集成",
-        "CLI交互界面",
-        "配置系统",
-        "端到端演示"
+        "单向依赖装配",
+        "四层配置",
+        "十步集成验证",
+        "沙箱边界声明"
       ],
       "file": "chapters/27.html"
     },
     {
       "num": "28",
-      "title": "总结与展望",
+      "title": "总结与展望：从最小循环到完整系统",
       "topics": [
-        "28章知识图谱",
-        "9大架构模式速查",
-        "进阶学习方向",
-        "Agent工程师素养"
+        "六部分知识图谱",
+        "金线与模式速查",
+        "进阶方向与贡献",
+        "工程师素养"
       ],
       "file": "chapters/28.html"
     }
