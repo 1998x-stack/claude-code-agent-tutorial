@@ -56,6 +56,17 @@ def run(output: Path) -> int:
                         ) if msg.type == "error" else None)
                         response = page.goto(f"{origin}/{path}", wait_until="networkidle")
                         page.locator("h1").first.wait_for(state="visible")
+                        # Images below the fold may be intentionally lazy-loaded.
+                        # Force discovery and wait for decoding BEFORE checking
+                        # naturalWidth; otherwise the mobile audit reports a
+                        # not-yet-requested image as broken (false positive).
+                        page.evaluate("""async () => {
+                            const images = [...document.images];
+                            images.forEach(img => { img.loading = 'eager'; });
+                            await Promise.all(images.map(img =>
+                                img.decode().catch(() => null)
+                            ));
+                        }""")
                         layout = page.evaluate("""() => ({
                             docWidth: document.documentElement.scrollWidth,
                             viewport: window.innerWidth,
