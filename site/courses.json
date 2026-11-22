@@ -1,63 +1,63 @@
 {
-  "title": "Claude Code 源码深度解析与 Agent Harness 搭建",
+  "title": "Claude Code 与 Coding Agent Harness：图解技术教程",
   "emoji": "🤖",
-  "subtitle": "🤖 28章 实战体系",
+  "subtitle": "28章，首批5章已完成精修，后续23章待复审",
   "chapterCount": 28,
   "chapters": [
     {
       "num": "01",
-      "title": "AI Coding Agent 前世今生",
+      "title": "AI Coding Agent 的演进：从建议到行动",
       "topics": [
-        "AI编程助手演进史",
-        "Agent范式对比",
-        "Claude Code定位",
-        "Harness工程护城河"
+        "代码补全与 Agent 的区别",
+        "环境反馈闭环",
+        "Harness 的职责边界",
+        "证据分级"
       ],
-      "file": "01.html"
+      "file": "chapters/01.html"
     },
     {
       "num": "02",
-      "title": "环境搭建与逆向工具链",
+      "title": "建立可靠的 Claude Code 研究环境",
       "topics": [
-        "源码获取与格式化",
-        "Chrome DevTools调试",
-        "Monkey Patch拦截API",
-        "三种逆向方法对比"
+        "官方文档与黑盒观察",
+        "版本化实验记录",
+        "合法且可复现的工作区",
+        "安全与证据边界"
       ],
-      "file": "02.html"
+      "file": "chapters/02.html"
     },
     {
       "num": "03",
-      "title": "从零实现最简 Agent Loop",
+      "title": "从零实现最小 Agent Loop",
       "topics": [
-        "while(true)循环",
-        "Anthropic API调用",
-        "stop_reason检测",
-        "v0 Bash Agent (50行)"
+        "Messages API 完整历史",
+        "参数校验与安全工具",
+        "stop_reason 状态机",
+        "离线单元测试"
       ],
-      "file": "03.html"
+      "file": "chapters/03.html"
     },
     {
       "num": "04",
-      "title": "Claude Code 顶层架构拆解",
+      "title": "Claude Code 的公开能力与 Harness 分层",
       "topics": [
-        "7大组件概览",
-        "4层架构模型",
-        "启动流程全链路",
-        "12层Harness Stack"
+        "四层教学架构",
+        "生命周期与权限",
+        "Hooks / Skills / Subagents / MCP",
+        "源码事实边界"
       ],
-      "file": "04.html"
+      "file": "chapters/04.html"
     },
     {
       "num": "05",
-      "title": "Tool Use 协议深度解析",
+      "title": "Tool Use 协议：从 JSON Schema 到工具结果",
       "topics": [
-        "tool_use/tool_result格式",
-        "JSON Schema最佳实践",
-        "并行工具调用",
-        "Streaming状态机"
+        "tool_use / tool_result",
+        "JSON Schema 校验",
+        "多工具结果关联",
+        "Streaming 与失败路径"
       ],
-      "file": "05.html"
+      "file": "chapters/05.html"
     },
     {
       "num": "06",
@@ -68,7 +68,7 @@
         "原子写入与参数校验",
         "v1 Agent (200行)"
       ],
-      "file": "06.html"
+      "file": "chapters/06.html"
     },
     {
       "num": "07",
@@ -79,7 +79,7 @@
         "SKILL.md懒加载",
         "92%前缀复用率"
       ],
-      "file": "07.html"
+      "file": "chapters/07.html"
     },
     {
       "num": "08",
@@ -90,7 +90,7 @@
         "turn计数与退出",
         "stop_reason状态机"
       ],
-      "file": "08.html"
+      "file": "chapters/08.html"
     },
     {
       "num": "09",
@@ -101,7 +101,7 @@
         "状态流转",
         "System Reminder注入"
       ],
-      "file": "09.html"
+      "file": "chapters/09.html"
     },
     {
       "num": "10",
@@ -112,7 +112,7 @@
         "Sonnet 4压缩",
         "Token计数实现"
       ],
-      "file": "10.html"
+      "file": "chapters/10.html"
     },
     {
       "num": "11",
@@ -123,7 +123,7 @@
         "对话持久化",
         "Haiku降本策略"
       ],
-      "file": "11.html"
+      "file": "chapters/11.html"
     },
     {
       "num": "12",
@@ -134,7 +134,7 @@
         "脏上下文隔离",
         "6种TaskType"
       ],
-      "file": "12.html"
+      "file": "chapters/12.html"
     },
     {
       "num": "13",
@@ -145,7 +145,7 @@
         "结果序列化",
         "v3 Agent (450行)"
       ],
-      "file": "13.html"
+      "file": "chapters/13.html"
     },
     {
       "num": "14",
@@ -156,7 +156,7 @@
         "懒加载策略",
         "优先级合并"
       ],
-      "file": "14.html"
+      "file": "chapters/14.html"
     },
     {
       "num": "15",
@@ -167,7 +167,7 @@
         "ML分类器独立评估",
         "deny优先原则"
       ],
-      "file": "15.html"
+      "file": "chapters/15.html"
     },
     {
       "num": "16",
@@ -178,7 +178,7 @@
         "用户确认回调",
         "危险操作拦截"
       ],
-      "file": "16.html"
+      "file": "chapters/16.html"
     },
     {
       "num": "17",
@@ -189,7 +189,7 @@
         "Shell注入防护",
         "文件系统边界"
       ],
-      "file": "17.html"
+      "file": "chapters/17.html"
     },
     {
       "num": "18",
@@ -200,7 +200,7 @@
         "Tool Annotations",
         "Elicitation机制"
       ],
-      "file": "18.html"
+      "file": "chapters/18.html"
     },
     {
       "num": "19",
@@ -211,7 +211,7 @@
         "工具发现与注册",
         "多Server聚合"
       ],
-      "file": "19.html"
+      "file": "chapters/19.html"
     },
     {
       "num": "20",
@@ -222,7 +222,7 @@
         "Cache断点算法",
         "模型Cache差异"
       ],
-      "file": "20.html"
+      "file": "chapters/20.html"
     },
     {
       "num": "21",
@@ -233,7 +233,7 @@
         "动态Prompt构建",
         "v4 Agent (550行)"
       ],
-      "file": "21.html"
+      "file": "chapters/21.html"
     },
     {
       "num": "22",
@@ -244,7 +244,7 @@
         "Arize多模型对比",
         "Adaptive Harness"
       ],
-      "file": "22.html"
+      "file": "chapters/22.html"
     },
     {
       "num": "23",
@@ -255,7 +255,7 @@
         "时间线可视化",
         "可观测性面板"
       ],
-      "file": "23.html"
+      "file": "chapters/23.html"
     },
     {
       "num": "24",
@@ -266,7 +266,7 @@
         "Haiku vs Sonnet",
         "端到端优化案例"
       ],
-      "file": "24.html"
+      "file": "chapters/24.html"
     },
     {
       "num": "25",
@@ -277,7 +277,7 @@
         "竞品对比",
         "学习路径推荐"
       ],
-      "file": "25.html"
+      "file": "chapters/25.html"
     },
     {
       "num": "26",
@@ -288,7 +288,7 @@
         "Kill Switch/Steering",
         "Meta-Harness"
       ],
-      "file": "26.html"
+      "file": "chapters/26.html"
     },
     {
       "num": "27",
@@ -299,7 +299,7 @@
         "配置系统",
         "端到端演示"
       ],
-      "file": "27.html"
+      "file": "chapters/27.html"
     },
     {
       "num": "28",
@@ -310,7 +310,9 @@
         "进阶学习方向",
         "Agent工程师素养"
       ],
-      "file": "28.html"
+      "file": "chapters/28.html"
     }
-  ]
+  ],
+  "refinedChapters": 5,
+  "legacyPendingReview": 23
 }
