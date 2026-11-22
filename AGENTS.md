@@ -39,7 +39,8 @@ Publish `site/` using GitHub Pages Actions workflow; confirm deployment rather t
 - Modern MCP 2026 standard transports are stdio and Streamable HTTP; Claude Code product can support additional legacy SSE or WebSocket server options. State scope precisely.
 - Bash sandbox is OS-enforced, not emulated by regex/string filtering. Teaching code must not execute arbitrary model shell commands. Document non-sandbox retry risks and true OS-level test requirements.
 - Prompt caching does not decrease context-window occupancy. Record actual usage cache fields; no fixed prefix hit rates without reproducible evidence.
-\n## Skills, Harness, Observability and Ecosystem
+
+## Skills, Harness, Observability and Ecosystem
 - Do not invent `triggers`, `priority`, automatic Evict heuristics or fixed skill-token budgets as official Claude Code Skills behavior. Use current official frontmatter and distinguish `disable-model-invocation` from `user-invocable`.
 - Invoked Skill body can remain in conversation context; `allowed-tools` is turn-scoped. `context: fork` is a separate subagent context, not an OS sandbox.
 - Completion must be evidence-based: required checks, artifacts, bounded steps, and human approval for side effects. Do not infer success from words like `done` or model stop markers alone.
