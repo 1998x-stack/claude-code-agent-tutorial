@@ -21,7 +21,6 @@ class CompletionGateTests(unittest.TestCase):
         self.assertEqual(self.gate.decide(), "ready")
 
     def test_failed_or_unverifiable_check_blocks_readiness(self):
-        self.gate.record_check("tests", True, "")
         with self.assertRaises(ValueError):
             self.gate.record_check("tests", True, "")
         self.gate.record_check("tests", False, "pytest: 1 failed")
