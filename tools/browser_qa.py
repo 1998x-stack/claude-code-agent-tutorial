@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Browser acceptance for the course portal and currently refined chapters.
+"""Browser acceptance for all course pages at desktop, tablet and phone widths.
 
 Requires: pip install playwright && python -m playwright install chromium
 Produces screenshot PNGs and report.json; skips are never silently "passed".
@@ -51,54 +51,89 @@ def run(output: Path) -> int:
                         )
                         errors = []
                         page.on("pageerror", lambda error: errors.append(str(error)))
-                        page.on("console", lambda msg: errors.append(
-                            msg.text if msg.type == "error" else ""
-                        ) if msg.type == "error" else None)
+                        page.on("console", lambda msg: errors.append(msg.text)
+                                if msg.type == "error" else None)
+                        page.on("response", lambda response: errors.append(
+                            f"HTTP {response.status}: {response.url}"
+                        ) if response.status >= 400 and response.url.startswith(origin) else None)
                         response = page.goto(f"{origin}/{path}", wait_until="networkidle")
                         page.locator("h1").first.wait_for(state="visible")
-                        # Images below the fold may be intentionally lazy-loaded.
-                        # Force discovery and wait for decoding BEFORE checking
-                        # naturalWidth; otherwise the mobile audit reports a
-                        # not-yet-requested image as broken (false positive).
+
+                        # Trigger lazy image requests and wait for decode before testing width.
                         page.evaluate("""async () => {
                             const images = [...document.images];
                             images.forEach(img => { img.loading = 'eager'; });
-                            await Promise.all(images.map(img =>
-                                img.decode().catch(() => null)
-                            ));
+                            await Promise.all(images.map(img => img.decode().catch(() => null)));
                         }""")
-                        layout = page.evaluate("""() => ({
-                            docWidth: document.documentElement.scrollWidth,
-                            viewport: window.innerWidth,
-                            h1s: document.querySelectorAll('h1').length,
-                            brokenImages: [...document.images]
-                                .filter(img => !img.complete || img.naturalWidth === 0)
-                                .map(img => img.src),
-                            headings: document.querySelectorAll('article h2').length
-                        })""")
+                        layout = page.evaluate("""() => {
+                            const localAnchors = [...document.querySelectorAll('a[href]')]
+                                .map(a => new URL(a.href, location.href))
+                                .filter(u => u.origin === location.origin && u.hash)
+                                .filter(u => !document.getElementById(decodeURIComponent(u.hash.slice(1))))
+                                .map(u => u.href);
+                            return {
+                                docWidth: document.documentElement.scrollWidth,
+                                viewport: window.innerWidth,
+                                h1s: document.querySelectorAll('h1').length,
+                                mainCount: document.querySelectorAll('main').length,
+                                brokenImages: [...document.images]
+                                    .filter(img => !img.complete || img.naturalWidth === 0)
+                                    .map(img => img.src),
+                                headings: document.querySelectorAll('article h2').length,
+                                figuresWithoutCaptions: [...document.querySelectorAll('figure')]
+                                    .filter(fig => !fig.querySelector('figcaption')).length,
+                                localAnchors
+                            };
+                        }""")
                         if response is None or response.status != 200:
                             errors.append(f"HTTP response was not 200: {response}")
                         if layout["docWidth"] > layout["viewport"] + 1:
-                            errors.append(
-                                f"horizontal overflow {layout['docWidth']} > {layout['viewport']}"
-                            )
+                            errors.append(f"horizontal overflow {layout['docWidth']} > {layout['viewport']}")
                         if layout["h1s"] != 1:
                             errors.append(f"expected 1 H1, saw {layout['h1s']}")
+                        if layout["mainCount"] != 1:
+                            errors.append(f"expected one main landmark, saw {layout['mainCount']}")
                         if layout["brokenImages"]:
                             errors.append(f"broken images: {layout['brokenImages']}")
-                        if slug != "index" and layout["headings"] < 5:
-                            errors.append("too few independent article sections")
+                        if layout["localAnchors"]:
+                            errors.append(f"broken same-page anchors: {layout['localAnchors']}")
+                        if layout["figuresWithoutCaptions"]:
+                            errors.append(f"figures without captions: {layout['figuresWithoutCaptions']}")
+                        if slug != "index":
+                            if layout["headings"] < 5:
+                                errors.append("too few independent article sections")
+                            if page.locator("nav.lesson-nav a").count() < 5:
+                                errors.append("chapter table of contents is missing or too short")
+
+                        # The skip link must be the first keyboard stop.
+                        page.keyboard.press("Tab")
+                        if page.locator(".skip").count() and not page.evaluate(
+                            "() => document.activeElement?.classList.contains('skip')"
+                        ):
+                            errors.append("skip link is not the first keyboard focus target")
+
+                        # Exercise TOC navigation on every chapter at desktop width.
+                        if slug != "index" and width == 1440:
+                            first_toc = page.locator("nav.lesson-nav a").first
+                            href = first_toc.get_attribute("href")
+                            first_toc.click()
+                            if href and page.evaluate("() => location.hash") != href:
+                                errors.append(f"TOC click did not navigate to {href}")
+
                         if slug == "index" and width == 1440:
-                            page.locator("[data-filter='base']").click()
-                            visible = page.locator(".chapter:not([hidden])").count()
-                            if visible != 5:
-                                errors.append(f"base filter expected 5, got {visible}")
+                            expected = {"base": 5, "tools": 6, "scale": 10, "advanced": 7}
+                            for category, count in expected.items():
+                                page.locator(f"[data-filter='{category}']").click()
+                                visible = page.locator(".chapter:not([hidden])").count()
+                                if visible != count:
+                                    errors.append(f"{category} filter expected {count}, got {visible}")
                             page.locator("[data-filter='all']").click()
                             page.locator("#chapter-search").fill("Tool Use")
                             visible = page.locator(".chapter:not([hidden])").count()
                             if visible < 1:
                                 errors.append("chapter search did not return Tool Use")
                             page.locator("#chapter-search").fill("")
+
                         if width in (1440, 390):
                             page.screenshot(
                                 path=str(output / f"{slug}-{width}.png"),
