@@ -8,8 +8,8 @@
 
 | 阶段 | 章节 | 说明 |
 |---|---|---|
-| 第一阶段 | 01–15 | Agent Loop、Tool Use、工具、Prompt、上下文、Sub-Agent、Skills 与权限；已完成精修 |
-| 第二阶段 | 16–21 | 权限实现、Bash 安全、MCP 与 Context Engineering；迁移保留，待事实复审 |
+| 第一阶段 | 01–20 | Agent Loop、Tool Use、工具、Prompt、Sub-Agent、权限、Bash 沙箱、MCP 2026 与 Context Engineering；已精修 |
+| 第二阶段 | 21 | Skills 实践实现；仍为迁移旧稿，待技术事实复审 |
 | 第三阶段 | 22–28 | Harness 模式、可观测性、优化与完整系统；迁移保留，待事实复审 |
 
 ## 目录
@@ -18,9 +18,9 @@
 - `site/chapters/01.html` … `28.html`：规范的章节 URL。
 - `site/assets/css`：首页、文章设计系统。
 - `site/assets/svg`：原创、独立的教学图解。
-- `examples/`：可运行样例和单元测试，包括 Workspace、Prompt、Agent Loop、TaskBoard、Context Budget、Handoff、Sub-Agent Scheduler、Skills Catalog 与 Permission Policy。
+- `examples/`：可运行样例和单元测试，包括 Workspace、Prompt、Agent Loop、TaskBoard、Context Budget、Handoff、Sub-Agent Scheduler、Skills Catalog、Permission Policy、Permission Gateway、Sandbox Manifest、MCP 双版本报文/注册中心与 Context Tuning。
 - `tools/validate_site.py`：本地与 CI 静态检查。
-- `archive/initial/`：第 01–15 章重写前的原始版本及旧首页。
+- `archive/initial/`：第 01–20 章重写前的原始版本及旧首页。
 - `NN.html` / `site/NN.html`：历史直链兼容跳转。
 - `.github/workflows/pages.yml`：将 `site/` 发布到 Pages。
 
@@ -49,3 +49,9 @@ python3 -m unittest discover -s examples -p 'test_*.py'
 ## Claude Code 的 AGENTS.md 兼容性
 
 本仓库以 `AGENTS.md` 为跨工具规范，并提供 `CLAUDE.md` 中的 `@AGENTS.md` 导入以兼容使用 Claude Code 的场景。较新的 Claude Code 支持直接读取 `AGENTS.md`，但默认读取策略受到上层 `CLAUDE.md`、用户设置与版本影响；具体请核对[官方记忆文档](https://code.claude.com/docs/en/memory)。
+
+## MCP 协议版本提醒
+
+截至 2026-11，现代 [MCP 2026-07-28 规范](https://modelcontextprotocol.io/specification/2026-07-28/basic/versioning)采用逐请求元数据；旧版 `2025-11-25` 及之前才使用会话级 `initialize`。示例分别测试两种协议时代，不宣称离线报文生成器已经实现完整的 MCP SDK 或网络协议互通。
+
+安全示例不执行模型生成的 Shell。沙箱章节的 `SandboxManifest` 是静态声明预检，不是 OS 沙箱。

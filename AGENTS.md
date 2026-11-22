@@ -22,7 +22,7 @@ Tutorial code is not production-safe unless explicitly engineered and tested so.
 
 ## Maintenance
 Chapter slugs `01`–`28` are stable. New chapters 06–10 use guarded workspace tools, layered prompts, event state machines, dependency DAGs and checkpoint budgeting. Preserve root and site redirects for old URLs. Update `site/courses.json`, homepage and links when changing chapter titles.
-Original chapters 01–15 archived at `archive/initial/`. Chapters 01–15 are refined; chapters 16–28 remain legacy and need technical review.
+Original chapters 01–20 archived at `archive/initial/`. Chapters 01–20 are refined; chapters 21–28 remain legacy and need technical review.
 Run `python3 tools/validate_site.py`, offline unit tests, and browser checks at 1440/768/390/360 with JS errors, horizontal overflow, figures, keyboard focus and nav if tooling permits. Record skipped browser steps, do not invent QA status.
 Publish `site/` using GitHub Pages Actions workflow; confirm deployment rather than assuming.
 
@@ -32,3 +32,10 @@ Publish `site/` using GitHub Pages Actions workflow; confirm deployment rather t
 - Claude Code skill frontmatter `allowed-tools` can preapprove named tools during the invocation turn, subject to policy. Do not treat arbitrary skill text as permission; in the offline SkillCatalog, executable/permission fields are deliberately ignored.
 - Subagent context isolation is not an OS sandbox. Authorization must be independently checked at execution time.
 - Permission modes are version-sensitive; do not hardcode "seven modes" or assume auto/classifier is universally available.
+
+## MCP 2026, sandbox, and context audits
+- MCP 2026-07-28 is the modern request-metadata era. Modern requests include `params._meta` version and clientCapabilities; session-level `initialize` and notifications/initialized belong to <=2025-11-25. Never mix protocol envelopes or claim legacy handshake is universal.
+- Trust no unverified tool annotations. Use host-assigned server namespaces, external tool authorization, JSON Schema validation, and explicit error/resultType handling.
+- Modern MCP 2026 standard transports are stdio and Streamable HTTP; Claude Code product can support additional legacy SSE or WebSocket server options. State scope precisely.
+- Bash sandbox is OS-enforced, not emulated by regex/string filtering. Teaching code must not execute arbitrary model shell commands. Document non-sandbox retry risks and true OS-level test requirements.
+- Prompt caching does not decrease context-window occupancy. Record actual usage cache fields; no fixed prefix hit rates without reproducible evidence.

@@ -1,7 +1,7 @@
 {
   "title": "Claude Code 与 Coding Agent Harness：图解技术教程",
   "emoji": "🤖",
-  "subtitle": "28章，前15章完成精修，后13章待复审",
+  "subtitle": "28章，前20章完成精修，后8章待复审",
   "chapterCount": 28,
   "chapters": [
     {
@@ -171,56 +171,56 @@
     },
     {
       "num": "16",
-      "title": "实现权限控制",
+      "title": "实现可审计的权限网关：逐请求审批与拒绝优先",
       "topics": [
-        "白名单/黑名单",
-        "模式切换",
-        "用户确认回调",
-        "危险操作拦截"
+        "三态权限结果",
+        "单次人工批准",
+        "参数指纹 / 防重放",
+        "独立授权测试"
       ],
       "file": "chapters/16.html"
     },
     {
       "num": "17",
-      "title": "Bash 沙箱与安全防线",
+      "title": "Bash 沙箱的真实安全边界：权限、文件、网络与逃逸重试",
       "topics": [
-        "4层纵深防御",
-        "命令白名单",
-        "Shell注入防护",
-        "文件系统边界"
+        "操作系统沙箱边界",
+        "auto-allow 与 auto 区分",
+        "非沙箱重试风险",
+        "Fail-Closed 清单"
       ],
       "file": "chapters/17.html"
     },
     {
       "num": "18",
-      "title": "MCP 协议深度解析",
+      "title": "MCP 协议 2026：从旧版握手到逐请求元数据",
       "topics": [
-        "协议生命周期",
-        "3种传输层",
-        "Tool Annotations",
-        "Elicitation机制"
+        "2026-07-28 与旧版兼容",
+        "JSON-RPC resultType",
+        "stdio / Streamable HTTP",
+        "工具注释与授权边界"
       ],
       "file": "chapters/18.html"
     },
     {
       "num": "19",
-      "title": "实现 MCP 集成",
+      "title": "实现 MCP 工具集成：多服务器路由、Schema 与授权",
       "topics": [
-        "STDIO Server管理",
-        "Streamable HTTP",
-        "工具发现与注册",
-        "多Server聚合"
+        "tools/list / tools/call",
+        "多服务器命名空间",
+        "Schema 与批准",
+        "协议错误与版本互通"
       ],
       "file": "chapters/19.html"
     },
     {
       "num": "20",
-      "title": "Context Engineering 深度分析",
+      "title": "Context Engineering：工具发现、缓存、清理与可测成本",
       "topics": [
-        "Prefix复用率92%",
-        "预热调用设计",
-        "Cache断点算法",
-        "模型Cache差异"
+        "Tool Search 与 Programmatic",
+        "缓存 vs 上下文窗口",
+        "Compaction 与 Context Editing",
+        "真实 Usage 账本"
       ],
       "file": "chapters/20.html"
     },
@@ -313,6 +313,6 @@
       "file": "chapters/28.html"
     }
   ],
-  "refinedChapters": 15,
-  "legacyPendingReview": 13
+  "refinedChapters": 20,
+  "legacyPendingReview": 8
 }

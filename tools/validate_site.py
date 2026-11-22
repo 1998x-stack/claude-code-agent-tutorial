@@ -28,7 +28,7 @@ pages = list(SITE.rglob('*.html'))
 for file in pages:
     obj = Doc()
     obj.feed(file.read_text(encoding='utf8'))
-    if file == SITE / 'index.html' or (file.parent == SITE / 'chapters' and file.stem.isdigit() and 1 <= int(file.stem) <= 15):
+    if file == SITE / 'index.html' or (file.parent == SITE / 'chapters' and file.stem.isdigit() and 1 <= int(file.stem) <= 20):
         if obj.h1 != 1: errors.append(str(file) + ' H1 count ' + str(obj.h1))
     for link in obj.links:
         ref = urlparse(link)
