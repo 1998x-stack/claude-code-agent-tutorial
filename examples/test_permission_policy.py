@@ -18,6 +18,8 @@ class PermissionTests(unittest.TestCase):
         self.assertEqual(p.decide("Read"), "allow")
         self.assertEqual(p.decide("Write", approved_by_user=True), "deny")
         self.assertEqual(p.decide("Bash"), "deny")
+        p_ask = Policy(mode="read_only", ask=frozenset({"Write"}))
+        self.assertEqual(p_ask.decide("Write", approved_by_user=True), "deny")
 
     def test_unattended_fails_closed(self):
         p = Policy(mode="unattended", ask=frozenset({"Edit"}),

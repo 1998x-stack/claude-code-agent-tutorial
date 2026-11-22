@@ -31,6 +31,10 @@ class Policy:
             return "deny"
         if tool in self.deny:
             return "deny"
+        # In this *teaching* read-only mode, explicit ask cannot override
+        # the resource boundary, even with a user confirmation.
+        if self.mode == "read_only" and tool not in self.safe_reads:
+            return "deny"
         if tool in self.ask:
             # An explicit ask requires a fresh user decision, even when allow
             # contains the same tool. A prior approval is scoped to this call.
