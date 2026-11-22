@@ -1,52 +1,45 @@
-# ⚡ Claude Code 源码深度解析与 Agent Harness 搭建
+# Claude Code 与 Coding Agent Harness：28 章图解教程
 
-> 📘 28章 实战体系 · 交互式 HTML 课程
+> 用官方 API 契约、可观察行为与教学用 Harness 解释 Coding Agent；不把未经证实的内部推断写成 Claude Code 源码事实。
 
-> **English TL;DR:** An all-Chinese 28-chapter course that **reverse-engineers Claude Code's source and rebuilds a coding-agent harness from scratch**. Alternates deep source teardown (top-level 7-component / 4-layer architecture, Tool-Use protocol, QueryEngine async loop, 5-stage context compaction at 92% threshold, Sub-Agent fork & dirty-context isolation, 7-mode permission system, skills/CLAUDE.md lazy loading, MCP protocol, Context Engineering with 92% prefix-reuse) with hands-on "implement-it-yourself" chapters (minimal agent loop, four basic tools, todo planning, context management, sub-agents, permissions, MCP integration, skills system, full 10-step coding agent). Ends with long-running-agent frontiers (default-FAIL, fresh-context evaluator, kill switch).
+**课程入口：** https://1998x-stack.github.io/claude-code-agent-tutorial/
 
-## 📖 课程简介
+## 学习路线
 
-本课程采用「**源码拆解 + 亲手实现**」双线并进的模式：一方面深入 Claude Code 源码——拆解其四大层架构、Tool Use 协议、QueryEngine 主循环、上下文压缩（92% 阈值五级管线）、Sub-Agent fork 机制、权限系统、Skills/CLAUDE.md 懒加载、MCP 集成与 Context Engineering；另一方面以对照章节从零实现最简 Agent Loop、四件套工具、Todo、上下文管理、Sub-Agent、权限控制、Skills 系统与完整 Coding Agent，最后落到 Long-Running Agents 等前沿范式。
+| 阶段 | 章节 | 说明 |
+|---|---|---|
+| 第一阶段 | 01–05 | 演进与研究边界、环境、Agent Loop、架构、Tool Use；本轮全篇重构 |
+| 第二阶段 | 06–21 | 工具、上下文、子 Agent、权限、Skills、MCP；迁移保留，待事实复审 |
+| 第三阶段 | 22–28 | Harness 模式、可观测性、优化与完整系统；迁移保留，待事实复审 |
 
-## 🚀 快速开始
+## 目录
+
+- `site/index.html`：Pages 首页，完整目录无需 JavaScript。
+- `site/chapters/01.html` … `28.html`：规范的章节 URL。
+- `site/assets/css`：首页、文章设计系统。
+- `site/assets/svg`：原创、独立的教学图解。
+- `examples/`：可运行样例和单元测试。
+- `tools/validate_site.py`：本地与 CI 静态检查。
+- `archive/initial/`：第一轮重写前的章节及首页。
+- `NN.html` / `site/NN.html`：历史直链兼容跳转。
+- `.github/workflows/pages.yml`：将 `site/` 发布到 Pages。
+
+## 运行与发布
 
 ```bash
-open index.html   # macOS，纯静态即开即看
+python3 -m http.server 8000
+# 浏览 http://localhost:8000/site/
+python3 tools/validate_site.py
+python3 -m unittest discover -s examples -p 'test_*.py'
 ```
 
-## 📂 项目结构
+首次启用 Pages：仓库 Settings → Pages → Build and deployment → Source 选 **GitHub Actions**；推送 main 后工作流会验证并部署 `site/`。不要将存在 workflow 误认为已经发布成功。
 
-```text
-claude-code-agent-tutorial/
-├── index.html / 01.html ~ 28.html / courses.json / theme.css
-```
+## 证据等级与安全
 
-## 📖 章节分段
+- **官方公开契约**：Claude Code 或 Claude Platform 官方文档和 SDK 公开接口。
+- **可观察行为**：有版本与步骤的公开 CLI/API 输入输出。
+- **教学设计**：本项目为理解机制而自建的流程、架构、示例代码，不宣称等于 Claude Code 私有源码。
+- 不运行模型生成的任意 Shell，不提交密钥；带副作用的工具必须有显式批准与执行边界。
 
-| 轨 | 章节 | 核心 |
-|-----|------|------|
-| **源码拆解** | 04,06,08 | 顶层架构、Tool Use 协议、QueryEngine 循环 |
-| **对照实现** | 03,06,09 | 最小 Agent Loop、四件套工具、Todo |
-| **上下文与子 Agent** | 10–13 | 压缩管线、上下文管理、Sub-Agent 分析/实现 |
-| **技能与权限** | 14–16 | Skills、权限、MCP |
-| **安全与工程** | 17–21 | Bash 沙箱、MCP 集成、Context Engineering、Skills 实现 |
-| **模式与实战** | 22–28 | Harness 设计模式、可观测性、性能、趋势、完整 Coding Agent |
-
-## ✨ 亮点
-
-- 唯一「逐行逆向 Claude Code + 从零复刻 Agent Harness」的课程
-- 双轨对照：源码篇 vs 实现篇并进
-- 覆盖 MCP、权限、上下文工程与 Long-Running Agents 前沿
-
-## 🎯 前置知识
-
-- 适合：Agent Harness 工程师 / 对 Claude Code 好奇的资深开发者
-- 建议具备：Python + Prompt/LLM API 经验
-
-## ✨ 特色
-
-- 从逆向到复刻再到前沿，自成 Agent 工程体系
-- 即开即用纯静态 HTML
-
----
-*本课程由 `claude-code-agent-tutorial/` 项目维护。*
+官方参考：[Claude Code docs](https://code.claude.com/docs/en/overview) · [Tool Use docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview)。可视化制作原则参照 [Olah-style-posts](https://github.com/1998x-stack/Olah-style-posts)，仅借鉴渐进解释方法。
