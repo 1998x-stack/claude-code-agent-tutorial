@@ -13,7 +13,7 @@ from pathlib import Path
 import threading
 
 ROOT = Path(__file__).resolve().parents[1]
-PAGES = ["site/index.html"] + [f"site/chapters/{n:02d}.html" for n in range(1, 21)]
+PAGES = ["site/index.html"] + [f"site/chapters/{n:02d}.html" for n in range(1, 26)]
 WIDTHS = (1440, 768, 390, 360)
 
 

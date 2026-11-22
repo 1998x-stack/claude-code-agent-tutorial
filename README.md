@@ -9,8 +9,8 @@
 | 阶段 | 章节 | 说明 |
 |---|---|---|
 | 第一阶段 | 01–20 | Agent Loop、Tool Use、工具、Prompt、Sub-Agent、权限、Bash 沙箱、MCP 2026 与 Context Engineering；已精修 |
-| 第二阶段 | 21 | Skills 实践实现；仍为迁移旧稿，待技术事实复审 |
-| 第三阶段 | 22–28 | Harness 模式、可观测性、优化与完整系统；迁移保留，待事实复审 |
+| 第二阶段 | 21–25 | Skills Runtime、Harness 控制流、Observability、性能工程与生态选型；已精修 |
+| 第三阶段 | 26–28 | Long-Running Agents、完整 Coding Agent 集成与总结；待技术事实复审 |
 
 ## 目录
 
@@ -18,9 +18,9 @@
 - `site/chapters/01.html` … `28.html`：规范的章节 URL。
 - `site/assets/css`：首页、文章设计系统。
 - `site/assets/svg`：原创、独立的教学图解。
-- `examples/`：可运行样例和单元测试，包括 Workspace、Prompt、Agent Loop、TaskBoard、Context Budget、Handoff、Sub-Agent Scheduler、Skills Catalog、Permission Policy、Permission Gateway、Sandbox Manifest、MCP 双版本报文/注册中心与 Context Tuning。
+- `examples/`：可运行样例和单元测试，包括 Workspace、Prompt、Agent Loop、TaskBoard、Context Budget、Handoff、Sub-Agent Scheduler、Skill Runtime、Completion Gate、Agent Observability、Performance Planner、Ecosystem Review，以及权限、沙箱、MCP 与 Context Engineering 示例。
 - `tools/validate_site.py`：本地与 CI 静态检查。
-- `archive/initial/`：第 01–20 章重写前的原始版本及旧首页。
+- `archive/initial/`：第 01–25 章重写前的原始版本及旧首页。
 - `NN.html` / `site/NN.html`：历史直链兼容跳转。
 - `.github/workflows/pages.yml`：将 `site/` 发布到 Pages。
 
@@ -55,3 +55,13 @@ python3 -m unittest discover -s examples -p 'test_*.py'
 截至 2026-11，现代 [MCP 2026-07-28 规范](https://modelcontextprotocol.io/specification/2026-07-28/basic/versioning)采用逐请求元数据；旧版 `2025-11-25` 及之前才使用会话级 `initialize`。示例分别测试两种协议时代，不宣称离线报文生成器已经实现完整的 MCP SDK 或网络协议互通。
 
 安全示例不执行模型生成的 Shell。沙箱章节的 `SandboxManifest` 是静态声明预检，不是 OS 沙箱。
+
+## 第 21–25 章：Skills 与 Harness 工程
+
+- 第 21 章遵循 Claude Code 官方 SKILL.md frontmatter 与调用生命周期；离线 catalog 只模拟受限字段，不授予真实工具权限。
+- 第 22 章采用公开工作流模式与证据驱动完成契约，不把模型的自然语言“完成”视为任务验收。
+- 第 23 章使用 OpenTelemetry 的 Trace/Event/Metric 术语，并默认过滤原始 Prompt、参数和结果正文。
+- 第 24 章通过固定任务集比较质量、P95、Token、成本和依赖图并发；不使用过时的固定命中率或模型价格。
+- 第 25 章收录官方 SDK、Skills、MCP 与公开开源 Agent，并要求审查 Plugin 的执行权限、网络和数据处理行为。
+
+本批 Python 示例为离线教学代码，不启动真实 Claude Code、模型或 MCP 服务器。
