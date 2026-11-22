@@ -23,7 +23,7 @@ class Policy:
     safe_reads: frozenset[str] = READ_ONLY_TOOLS
 
     def __post_init__(self):
-        if self.mode not in {"manual", "read_only", "unattended"}:
+        if not isinstance(self.mode, str) or self.mode not in {"manual", "read_only", "unattended"}:
             raise ValueError("unsupported teaching mode")
         for field_name in ("deny", "ask", "allow", "safe_reads"):
             values = getattr(self, field_name)

@@ -69,6 +69,7 @@ class PermissionGateway:
                 not _DIGEST.fullmatch(approval.request_digest) or
                 not isinstance(approval.approved_by, str) or
                 not approval.approved_by.strip() or
+                not isinstance(approval.decision, str) or
                 approval.decision not in {"approve", "deny"} or
                 approval.decision != "approve" or
                 approval.request_digest != digest):
