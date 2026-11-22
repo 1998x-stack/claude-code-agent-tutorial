@@ -1,7 +1,7 @@
 {
   "title": "Claude Code 与 Coding Agent Harness：图解技术教程",
   "emoji": "🤖",
-  "subtitle": "28章，前10章完成精修，后18章待复审",
+  "subtitle": "28章，前15章完成精修，后13章待复审",
   "chapterCount": 28,
   "chapters": [
     {
@@ -116,56 +116,56 @@
     },
     {
       "num": "11",
-      "title": "实现上下文管理",
+      "title": "上下文持久化：让 Agent 从中断中可靠恢复",
       "topics": [
-        "滑动窗口截断",
-        "自动摘要生成",
-        "对话持久化",
-        "Haiku降本策略"
+        "Handoff Journal",
+        "证据与消息历史",
+        "恢复校验",
+        "离线持久化测试"
       ],
       "file": "chapters/11.html"
     },
     {
       "num": "12",
-      "title": "Sub-Agent 架构分析",
+      "title": "Sub-Agent 架构：委派契约与三重隔离边界",
       "topics": [
-        "AgentTool源码",
-        "fork机制",
-        "脏上下文隔离",
-        "6种TaskType"
+        "上下文/权限/资源三重隔离",
+        "子任务授权契约",
+        "证据回收",
+        "官方 Subagents/Fork 区别"
       ],
       "file": "chapters/12.html"
     },
     {
       "num": "13",
-      "title": "实现 Sub-Agent 系统",
+      "title": "实现 Sub-Agent 调度：并发、归并与失败回收",
       "topics": [
-        "进程隔离方案",
-        "并行调度",
-        "结果序列化",
-        "v3 Agent (450行)"
+        "有限并发与稳定结果",
+        "模拟 Worker",
+        "异常与证据校验",
+        "无共享写入的单元测试"
       ],
       "file": "chapters/13.html"
     },
     {
       "num": "14",
-      "title": "Skills 与知识加载机制",
+      "title": "Skills 与项目指令：按需加载、生命周期和权限边界",
       "topics": [
-        "SkillTool实现",
-        "CLAUDE.md三层级",
-        "懒加载策略",
-        "优先级合并"
+        "SKILL.md 发现与调用",
+        "CLAUDE.md / AGENTS.md",
+        "allowed-tools 当轮权限",
+        "安全加载与测试"
       ],
       "file": "chapters/14.html"
     },
     {
       "num": "15",
-      "title": "权限系统源码拆解",
+      "title": "Claude Code 权限系统：规则优先级、模式与安全边界",
       "topics": [
-        "7种权限模式",
-        "规则链评估",
-        "ML分类器独立评估",
-        "deny优先原则"
+        "deny / ask / allow 优先级",
+        "6 类官方模式",
+        "Agent SDK 权限链",
+        "Fail-Closed 策略测试"
       ],
       "file": "chapters/15.html"
     },
@@ -313,6 +313,6 @@
       "file": "chapters/28.html"
     }
   ],
-  "refinedChapters": 10,
-  "legacyPendingReview": 18
+  "refinedChapters": 15,
+  "legacyPendingReview": 13
 }
