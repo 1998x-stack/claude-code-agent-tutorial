@@ -1,7 +1,8 @@
+import hashlib
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from handoff_journal import Handoff, save, load
+from handoff_journal import Handoff, save, load, MAX_JOURNAL_BYTES
 
 
 class HandoffJournalTests(unittest.TestCase):
@@ -29,13 +30,15 @@ class HandoffJournalTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "checksum mismatch"):
                 load(p, digest)
 
-    def test_empty_constraints_and_progress_rejected(self):
-        bad = Handoff("goal", (), ("observed",), ("todo",), ())
+    def test_empty_and_malformed_fields_rejected(self):
         with self.assertRaises(ValueError):
-            bad.validate()
-        bad2 = Handoff("goal", ("constraint",), (), (), ())
+            Handoff("goal", (), ("observed",), ("todo",), ()).validate()
         with self.assertRaises(ValueError):
-            bad2.validate()
+            Handoff("goal", ("constraint",), (), (), ()).validate()
+        with self.assertRaises(ValueError):
+            Handoff("goal", ("constraint",), (), ("todo",), ("",)).validate()
+        with self.assertRaises(ValueError):
+            Handoff("goal", ["constraint"], (), ("todo",), ()).validate()
 
     def test_symlink_destination_rejected(self):
         with TemporaryDirectory() as root:
@@ -46,6 +49,24 @@ class HandoffJournalTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 save(link, self.fixture())
             self.assertEqual(target.read_text(), "do not change")
+
+    def test_duplicate_json_keys_and_bad_digest_rejected(self):
+        raw = b'{"schema":1,"schema":1,"handoff":{}}'
+        with TemporaryDirectory() as root:
+            path = Path(root) / "duplicate.json"
+            path.write_bytes(raw)
+            digest = hashlib.sha256(raw).hexdigest()
+            with self.assertRaisesRegex(ValueError, "duplicate JSON key"):
+                load(path, digest)
+            with self.assertRaises(ValueError):
+                load(path, "not-a-digest")
+
+    def test_oversized_journal_rejected_before_unbounded_read(self):
+        with TemporaryDirectory() as root:
+            path = Path(root) / "large.json"
+            path.write_bytes(b"x" * (MAX_JOURNAL_BYTES + 1))
+            with self.assertRaises(ValueError):
+                load(path, "0" * 64)
 
 
 if __name__ == "__main__":
