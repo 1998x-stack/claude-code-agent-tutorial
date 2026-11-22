@@ -1,0 +1,43 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="在安全的整数计算工具上建立 Messages API 的工具调用循环：严格校验参数，正确回传多工具结果，并用离线测试验证消息顺序。"><title>第03章 · 从零实现最小 Agent Loop | Claude Code Agent Lab</title><link rel="stylesheet" href="../assets/css/article.css"></head><body><a class="skip" href="#content">跳转至正文</a><header class="masthead"><nav class="topnav wrap" aria-label="站点导航"><a class="brand" href="../index.html">◎ Claude Code · Agent Lab</a><div class="navlinks"><a href="../index.html#chapters">章节目录</a><a href="https://github.com/1998x-stack/claude-code-agent-tutorial">仓库</a></div></nav></header><div class="lesson-layout"><nav class="lesson-nav" aria-label="文章目录"><strong>第03章 · 本页导航</strong><ol><li><a href="#why">最小 Agent Loop 到底需要什么</a></li><li><a href="#tool">定义小而可验证的工具契约</a></li><li><a href="#messages">完整保留 assistant，再返回全部 tool_result</a></li><li><a href="#states">stop_reason 决定循环的出口</a></li><li><a href="#run">复制完整示例并运行单元测试</a></li><li><a href="#test">用确定性测试证明协议没有写错</a></li><li><a href="#extensions">从教学用闭环升级到可用系统</a></li></ol></nav><main class="lesson" id="content"><article><header class="lesson-header"><p class="lesson-meta">CHAPTER 03 / 28 · CODING AGENT ENGINEERING</p><h1>从零实现最小 Agent Loop</h1><p class="subtitle">在安全的整数计算工具上建立 Messages API 的工具调用循环：严格校验参数，正确回传多工具结果，并用离线测试验证消息顺序。</p></header><section id="why" aria-labelledby="why-title"><h2 id="why-title">最小 Agent Loop 到底需要什么</h2><p>语言模型本身不会读你的本地文件，也不会运行 Python。一个最小的<strong>客户端工具 Agent</strong> 由三部分组成：通过 API 询问模型下一步、由程序验证并执行模型提出的工具调用、把执行结果追加回历史再问模型。</p><p>与可能包含沙箱、调度、权限和恢复的成熟产品相比，这里先使用一个<strong>没有副作用的整数加法工具</strong>，让我们精确检查循环协议。</p><figure><div class="diagram-scroll"><img src="../assets/svg/03-transcript.svg" alt="user 请求进入模型，assistant 完整响应先归档，工具结果以 user 消息返回。" width="840" height="426" loading="lazy"></div><figcaption>图 1：最常见的实现错误是把 assistant 的每个 tool_use 分别塞成一条消息，破坏原始响应与结果对应关系。</figcaption></figure></section><section id="tool" aria-labelledby="tool-title"><h2 id="tool-title">定义小而可验证的工具契约</h2><p>工具是模型<strong>可以请求</strong>的能力，不是模型自由执行程序代码的许可证。注册工具时用 JSON Schema 描述名称、参数和必填规则；实际执行必须由宿主程序完成。</p><pre><code>TOOLS = [{
+    "name": "add_numbers",
+    "description": "Add two bounded integers.",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "a": {"type": "integer"},
+            "b": {"type": "integer"}
+        },
+        "required": ["a", "b"],
+        "additionalProperties": False
+    }
+}]</code></pre><p>本章的 <code>dispatch_tool()</code> 只接受名字为 <code>add_numbers</code> 的调用，确认参数恰好为 <code>a</code> 与 <code>b</code>，两者均是真正的整数、绝对值不超过 10000；其余输入返回 <code>is_error=true</code>。这不仅是防止崩溃，更是在示范系统对模型输出保持不信任。</p></section><section id="messages" aria-labelledby="messages-title"><h2 id="messages-title">完整保留 assistant，再返回全部 tool_result</h2><p>Messages API 可能在一次 <code>assistant</code> 响应里返回文字和多个 <code>tool_use</code> 块。正确做法是先把<strong>原始 assistant 内容整体</strong>写入历史，依序执行工具，然后用紧随其后的一条 <code>user</code> 消息包含所有对应结果。每个结果通过 <code>tool_use_id</code> 对应具体调用。</p><pre><code># 省略客户端初始化和 TOOL_SCHEMA
+response = client.messages.create(
+    model=model, max_tokens=1024,
+    messages=messages, tools=TOOLS
+)
+messages.append({
+    "role": "assistant",
+    "content": [b.model_dump(exclude_none=True) for b in response.content]
+})
+if response.stop_reason == "tool_use":
+    results = []
+    for b in response.content:
+        if b.type != "tool_use":
+            continue
+        text, failed = dispatch_tool(b.name, b.input)
+        results.append({
+            "type": "tool_result",
+            "tool_use_id": b.id,
+            "content": text,
+            "is_error": failed
+        })
+    messages.append({"role": "user", "content": results})</code></pre><div class="callout"><h3>一个不能忽略的协议不变量</h3><p>每个工具调用块都需要匹配的工具结果。工具抛错时也应返回错误结果，不能默默忽略该调用，否则后续轮次可能无法重建正确的协议状态。</p></div></section><section id="states" aria-labelledby="states-title"><h2 id="states-title">stop_reason 决定循环的出口</h2><p><code>stop_reason == "tool_use"</code> 意味着应处理当前工具调用并继续；<code>end_turn</code> 表示正常完成当前助手回合。对于 <code>max_tokens</code> 等停止原因，不能简单地当作最终答案：输出可能被截断。还要处理异常、工具超时、用户中止及显式最大步数。</p><figure><div class="diagram-scroll"><img src="../assets/svg/03-states.svg" alt="Agent Loop 根据 stop_reason 进入继续、结束、不完整和错误等分支。" width="840" height="426" loading="lazy"></div><figcaption>图 2：状态机显示一个明确的循环回边，以及多个语义不同的退出路径。</figcaption></figure><p>本例把超出轮次与非正常停机变成清晰的异常，而非假装任务已完成。生产系统需要进一步实现重试策略、日志、幂等工具调用和人工中止。</p></section><section id="run" aria-labelledby="run-title"><h2 id="run-title">复制完整示例并运行单元测试</h2><p>真实代码保存在 <a href="https://github.com/1998x-stack/claude-code-agent-tutorial/blob/refactor/olah-pages-first-five-20261122/examples/mini_agent.py"><code>examples/mini_agent.py</code></a>，包含输入检查、tool_use 多块处理、错误回传、步数预算和自然语言任务入口。源码并不连接 Shell，也不写文件。</p><pre><code># 不调用模型即可验证协议与拒绝逻辑
+python3 -m unittest discover -s examples -p 'test_*.py'
+
+# 只有需要调用真实 Messages API 时才安装 SDK
+python3 -m pip install anthropic
+
+# 以下变量仅配置在自己的 shell 环境中
+export ANTHROPIC_API_KEY="your-secret-key"
+export ANTHROPIC_MODEL="your-supported-model-id"
+python3 examples/mini_agent.py "Please add 7 and 5 using the tool"</code></pre><p>模型 ID 由实际账户与官方文档决定，本教程不硬编码过时别名。运行可能产生 API 费用；单元测试不需要网络、SDK 或真实密钥。</p><div class="callout warning"><h3>为何不从 unrestricted Bash 开始</h3><p>旧式示例把模型字符串直接传给 <code>subprocess.run(..., shell=True)</code>，存在命令注入、破坏文件和外联风险。本章改用纯计算工具；以后扩展读写操作时，必须补上工作目录边界、权限确认与隔离环境。</p></div></section><section id="test" aria-labelledby="test-title"><h2 id="test-title">用确定性测试证明协议没有写错</h2><p>测试使用模拟客户端，在不发起 API 请求的情况下重放一次<strong>含两个工具调用的 assistant 响应</strong>。它断言第二轮请求的消息角色恰为 <code>user → assistant → user</code>，后者包含两个分别与原始 ID 对应的结果 <code>3</code> 与 <code>7</code>。</p><p>另外两个测试确保：工具名称未知、数字越界与布尔值冒充整数会被拒绝；当 <code>stop_reason=max_tokens</code> 或步数耗尽时，Agent 不会伪装成功。这些测试验证的是我们写的 Harness 的确定性性质，而不依赖模型“刚好遵守提示词”。</p></section><section id="extensions" aria-labelledby="extensions-title"><h2 id="extensions-title">从教学用闭环升级到可用系统</h2><div class="table-scroll"><table><thead><tr><th>当前示例已有</th><th>生产级仍需补齐</th></tr></thead><tbody><tr><td>参数校验、显式工具注册</td><td>身份与权限、工具沙箱、危险操作确认</td></tr><tr><td>最大轮次、错误停止</td><td>预算/超时/速率限制/重试策略</td></tr><tr><td>完整协议消息历史</td><td>持久化、压缩、隐私与数据清理</td></tr><tr><td>离线单元测试</td><td>故障注入、端到端评估和安全审计</td></tr></tbody></table></div><div class="exercise"><strong>动手：</strong>在 <code>dispatch_tool</code> 中增加没有副作用的 <code>multiply_numbers</code>，编写一个包含两种工具的 mock 响应，验证两条结果仍放在同一条 user 消息中。</div></section><section id="references" aria-labelledby="references-title"><h2 id="references-title">参考资料与事实边界</h2><ol class="refs"><li><a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/how-tool-use-works">Claude Platform: how tool use works</a> — 规范解释 assistant.tool_use 与 user.tool_result 的消息顺序</li><li><a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/handle-tool-calls">Claude Platform: handle tool calls</a> — 工具结果、错误和多个工具调用的处理要求</li><li><a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/build-a-tool-using-agent">Claude Platform: build a tool-using agent</a> — 官方渐进式客户端工具教程</li><li><a href="https://github.com/anthropics/anthropic-sdk-python">Anthropic Python SDK</a> — Python Messages API SDK 示例</li></ol><p class="figure-note">以下示例是对公开协议的教学实现，绝不声称复刻 Claude Code 的未公开内部代码。具体模型、SDK 版本和权限策略请按运行时官方文档核验。</p></section><nav class="lesson-pager" aria-label="章节切换"><a href="02.html">← 第2章</a><a href="04.html">第4章 →</a></nav></article></main></div></body></html>
