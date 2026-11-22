@@ -41,13 +41,13 @@
 
 ## 验收门禁
 
-\`\`\`bash
+```bash
 python3 tools/validate_site.py
 python3 -m unittest discover -s examples -p 'test_*.py'
 python3 tools/browser_qa.py --output qa-output
 python3 examples/safe_coding_agent.py demo
 python3 examples/long_running_contract.py
 python3 examples/completion_gate.py
-\`\`\`
+```
 
 必须以本复审 PR 的 GitHub Actions 实际结果为准，不预先宣称通过。

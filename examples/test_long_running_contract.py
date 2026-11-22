@@ -123,6 +123,8 @@ class LongRunningContractTests(unittest.TestCase):
 
     def test_traversal_and_duplicate_feature_ids_rejected(self):
         with self.assertRaises(ValueError):
+            FeatureLedger("demo", "rev", [Feature(["bad"], "a", "test")])
+        with self.assertRaises(ValueError):
             FeatureLedger("demo", "rev", [Feature("../secret", "a", "test")])
         with self.assertRaises(ValueError):
             FeatureLedger("demo", "rev", [Feature("a", "x", "y"), Feature("a", "x", "y")])

@@ -93,15 +93,15 @@ class FeatureLedger:
                 raise ValueError("invalid steering note")
         if any(not isinstance(item, Feature) for item in self.features):
             raise ValueError("features must contain Feature objects")
-        ids = [item.ident for item in self.features]
-        if len(set(ids)) != len(ids):
-            raise ValueError("duplicate feature ID")
         for item in self.features:
             item.validate()
             if item.attempts > self.max_attempts:
                 raise ValueError("feature attempts exceed the ledger budget")
             if item.status == "pending" and item.attempts >= self.max_attempts:
                 raise ValueError("exhausted feature cannot remain pending")
+        ids = [item.ident for item in self.features]
+        if len(set(ids)) != len(ids):
+            raise ValueError("duplicate feature ID")
 
     def _get(self, ident: str) -> Feature:
         for item in self.features:
