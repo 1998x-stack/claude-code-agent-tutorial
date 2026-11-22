@@ -17,9 +17,16 @@ class PermissionTests(unittest.TestCase):
         p = Policy(mode="read_only", allow=frozenset({"Read"}))
         self.assertEqual(p.decide("Read"), "allow")
         self.assertEqual(p.decide("Write", approved_by_user=True), "deny")
-        self.assertEqual(p.decide("Bash"), "deny")
+        self.assertEqual(p.decide("BashPreview"), "deny")
         p_ask = Policy(mode="read_only", ask=frozenset({"Write"}))
         self.assertEqual(p_ask.decide("Write", approved_by_user=True), "deny")
+
+    def test_read_only_safe_reads_cannot_be_overridden(self):
+        with self.assertRaises(ValueError):
+            Policy(mode="read_only", safe_reads=frozenset({"Write"}))
+        with self.assertRaises(ValueError):
+            Policy(mode="read_only", safe_reads=frozenset({"BashPreview"}))
+        self.assertEqual(Policy().decide("Read", approved_by_user="false"), "deny")
 
     def test_unattended_fails_closed(self):
         p = Policy(mode="unattended", ask=frozenset({"Edit"}),
@@ -27,6 +34,14 @@ class PermissionTests(unittest.TestCase):
         self.assertEqual(p.decide("Edit", approved_by_user=True), "deny")
         self.assertEqual(p.decide("Write"), "deny")
         self.assertEqual(p.decide("Read"), "allow")
+
+    def test_invalid_policy_sets_and_modes_rejected(self):
+        with self.assertRaises(ValueError):
+            Policy(mode="automatic")
+        with self.assertRaises(ValueError):
+            Policy(allow=frozenset({"RootShell"}))
+        with self.assertRaises(ValueError):
+            Policy(deny={"Write"})
 
 
 if __name__ == "__main__":

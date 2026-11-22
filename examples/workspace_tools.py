@@ -5,19 +5,17 @@ two fixed read-only operations implemented with Python. The tool names model
 an interface, not the privileged tools built into Claude Code.
 """
 from __future__ import annotations
-
 import os
-from pathlib import Path, PurePosixPath
+from pathlib import Path, PurePosixPath, PureWindowsPath
 import tempfile
 from typing import Any
-
 
 class ToolError(ValueError):
     """A safe, reportable tool rejection."""
 
-
 MAX_TEXT = 16_384
 FORBIDDEN = {".git", ".env", ".ssh", ".aws", ".claude", "__pycache__"}
+FORBIDDEN_CASEFOLD = frozenset(name.casefold() for name in FORBIDDEN)
 
 
 class Workspace:
@@ -27,12 +25,19 @@ class Workspace:
             raise ToolError("workspace must be a directory")
 
     def target(self, relative: str) -> Path:
-        if not isinstance(relative, str) or not relative or "\x00" in relative or "\\" in relative:
-            raise ToolError("expected a safe POSIX relative path")
+        if not isinstance(relative, str) or not relative or len(relative) > 1024:
+            raise ToolError("expected a nonempty bounded relative path")
+        if any(ord(char) < 32 or ord(char) == 127 for char in relative):
+            raise ToolError("control characters are forbidden in paths")
+        if "\\" in relative or ":" in relative:
+            raise ToolError("Windows separators, drives and alternate streams are forbidden")
+        win_path = PureWindowsPath(relative)
         path = PurePosixPath(relative)
-        if path.is_absolute() or not path.parts or any(p in ("..", ".") for p in path.parts):
+        if (path.is_absolute() or win_path.is_absolute() or win_path.drive or
+                not path.parts or any(p in ("..", ".") for p in path.parts)):
             raise ToolError("path traversal or absolute path is forbidden")
-        if any(p in FORBIDDEN or p.startswith(".env.") for p in path.parts):
+        if any(p.casefold() in FORBIDDEN_CASEFOLD or p.casefold().startswith(".env.")
+               for p in path.parts):
             raise ToolError("reserved or sensitive path")
         candidate = self.root.joinpath(*path.parts)
         current = self.root
@@ -53,7 +58,7 @@ class Workspace:
         if command == "ls":
             entries = sorted(
                 p.name for p in self.root.iterdir()
-                if not p.is_symlink() and p.name not in FORBIDDEN
+                if not p.is_symlink() and p.name.casefold() not in FORBIDDEN_CASEFOLD
             )
             return "\n".join(entries)[:MAX_TEXT]
         raise ToolError("BashPreview supports only the exact commands 'pwd' or 'ls'")
@@ -62,10 +67,13 @@ class Workspace:
         file = self.target(path)
         if not file.is_file():
             raise ToolError("not a regular file")
-        if file.stat().st_size > MAX_TEXT:
-            raise ToolError("file exceeds the demonstration size limit")
         try:
-            return file.read_text(encoding="utf-8")
+            # Bound the actual read, not only a prior stat that can go stale.
+            with file.open("rb") as stream:
+                raw = stream.read(MAX_TEXT + 1)
+            if len(raw) > MAX_TEXT:
+                raise ToolError("file exceeds the demonstration byte limit")
+            return raw.decode("utf-8")
         except (OSError, UnicodeDecodeError) as exc:
             raise ToolError("cannot read UTF-8 text") from exc
 
@@ -101,7 +109,7 @@ class Workspace:
     def edit(self, path: str, old: str, new: str, approved: bool = False) -> str:
         if approved is not True:
             raise ToolError("explicit approval required to change a file")
-        if not old or not isinstance(old, str) or not isinstance(new, str):
+        if not isinstance(old, str) or not old or not isinstance(new, str):
             raise ToolError("old must be nonempty text, new must be text")
         file = self.target(path)
         current = self.read(path)
@@ -113,7 +121,7 @@ class Workspace:
 
     def dispatch(self, name: str, args: Any, approved: bool = False) -> tuple[str, bool]:
         """Return a tool_result-compatible (content, is_error) pair."""
-        if name not in {"BashPreview", "Read", "Write", "Edit"}:
+        if not isinstance(name, str) or name not in {"BashPreview", "Read", "Write", "Edit"}:
             return "unregistered tool", True
         if not isinstance(args, dict):
             return "tool arguments must be an object", True

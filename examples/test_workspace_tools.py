@@ -42,25 +42,35 @@ class WorkspaceTests(unittest.TestCase):
         )[1])
         self.assertEqual(self.ws.read("dupe.txt"), "x x")
 
-    def test_blocks_sensitive_and_escape_paths(self):
-        for path in ("../escape", "/tmp/external", ".git/config", ".env", ".env.local"):
-            with self.subTest(path=path):
-                with self.assertRaises(ToolError):
-                    self.ws.target(path)
+    def test_blocks_sensitive_escape_windows_and_control_paths(self):
+        for path in ("../escape", "/tmp/external", ".git/config", ".env", ".env.local",
+                     ".GIT/config", ".ENV", ".SSH/id_rsa", "C:/Windows/win.ini",
+                     "C:relative.txt", "file.txt:secret", "bad\nname.txt"):
+            with self.subTest(path=path), self.assertRaises(ToolError):
+                self.ws.target(path)
         self.assertTrue(self.ws.dispatch("Read", {"path": "../outside"})[1])
         (self.root / "link").symlink_to(self.root.parent, target_is_directory=True)
         with self.assertRaises(ToolError):
             self.ws.target("link/escape")
 
-    def test_no_shell_execution(self):
-        self.assertEqual(self.ws.bash_preview("ls"), "")
+    def test_read_limit_counts_utf8_bytes_and_bounds_actual_read(self):
+        (self.root / "unicode.txt").write_text("界" * 6000, encoding="utf-8")
+        with self.assertRaises(ToolError):
+            self.ws.read("unicode.txt")
+        (self.root / "ok.txt").write_text("界" * 100, encoding="utf-8")
+        self.assertEqual(len(self.ws.read("ok.txt")), 100)
+
+    def test_no_shell_execution_and_sensitive_listing(self):
+        (self.root / ".ENV").write_text("secret", encoding="utf-8")
         self.assertEqual(self.ws.bash_preview("pwd"), str(self.root))
+        self.assertNotIn(".ENV", self.ws.bash_preview("ls"))
         for command in ("ls -la", "echo hi", "pwd; rm -rf .", "cat .env"):
             with self.assertRaises(ToolError):
                 self.ws.bash_preview(command)
 
     def test_rejects_unknown_and_extra_arguments(self):
         self.assertTrue(self.ws.dispatch("Shell", {"command": "ls"})[1])
+        self.assertTrue(self.ws.dispatch([], {"command": "ls"})[1])
         self.assertTrue(self.ws.dispatch("Read", {"path": "a", "ignored": "x"})[1])
         self.assertTrue(self.ws.dispatch("Write", "not-a-dict", approved=True)[1])
 
