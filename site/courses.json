@@ -1,7 +1,7 @@
 {
   "title": "Claude Code 与 Coding Agent Harness：图解技术教程",
   "emoji": "🤖",
-  "subtitle": "28章，前20章完成精修，后8章待复审",
+  "subtitle": "28章，前25章完成精修，后3章待复审",
   "chapterCount": 28,
   "chapters": [
     {
@@ -226,56 +226,56 @@
     },
     {
       "num": "21",
-      "title": "实现 Skills 系统",
+      "title": "实现 Skills Runtime：发现、按需加载与安全调用",
       "topics": [
-        "SKILL.md解析器",
-        "触发匹配",
-        "动态Prompt构建",
-        "v4 Agent (550行)"
+        "SKILL.md frontmatter",
+        "用户 / 模型调用边界",
+        "fork 与动态上下文",
+        "安全目录测试"
       ],
       "file": "chapters/21.html"
     },
     {
       "num": "22",
-      "title": "Harness 设计模式对比",
+      "title": "Agent Harness 设计：控制流、完成契约与评估循环",
       "topics": [
-        "3种Finish模式",
-        "Meta-Harness演进",
-        "Arize多模型对比",
-        "Adaptive Harness"
+        "Sequential / Parallel / Routing",
+        "证据驱动完成门禁",
+        "人类审批与步数预算",
+        "有界评估循环"
       ],
       "file": "chapters/22.html"
     },
     {
       "num": "23",
-      "title": "Agent 调试与可观测性",
+      "title": "Agent Observability：事件关联、Token 账本与隐私边界",
       "topics": [
-        "3层日志体系",
-        "Token消耗追踪",
-        "时间线可视化",
-        "可观测性面板"
+        "OpenTelemetry Signals",
+        "request_id / tool_use_id",
+        "Token 与延迟归因",
+        "隐私白名单"
       ],
       "file": "chapters/23.html"
     },
     {
       "num": "24",
-      "title": "性能优化实战",
+      "title": "Agent Performance Engineering：并发、模型路由与成本优化",
       "topics": [
-        "Cache命中率调优",
-        "并行工具调用",
-        "Haiku vs Sonnet",
-        "端到端优化案例"
+        "依赖感知并行",
+        "质量阈值模型路由",
+        "Prompt Cache 观测",
+        "可复现实验"
       ],
       "file": "chapters/24.html"
     },
     {
       "num": "25",
-      "title": "社区教程与工具生态",
+      "title": "Coding Agent Ecosystem：SDK、Skills、MCP、开源项目与供应链审查",
       "topics": [
-        "国内外教程全景",
-        "开源工具链",
-        "竞品对比",
-        "学习路径推荐"
+        "官方 SDK 与 Skills",
+        "MCP 与插件生态",
+        "开源 Agent 比较",
+        "许可证与供应链审查"
       ],
       "file": "chapters/25.html"
     },
@@ -313,6 +313,6 @@
       "file": "chapters/28.html"
     }
   ],
-  "refinedChapters": 20,
-  "legacyPendingReview": 8
+  "refinedChapters": 25,
+  "legacyPendingReview": 3
 }
