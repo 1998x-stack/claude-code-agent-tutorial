@@ -69,7 +69,7 @@ python3 -m unittest discover -s examples -p 'test_*.py'
 
 ## 第 26–28 章：跨会话到完整交付
 
-- **26 Long-Running Agents**：基于 Anthropic 2025/2026 公开长任务研究讲解初始化与执行会话、独立验收、功能清单、Steering、Kill Switch、状态校验与检查点。离线示例：`examples/long_running_contract.py`。
+- **26 Long-Running Agents**：基于 Anthropic 2025/2026 公开长任务研究讲解初始化与执行会话、独立验收、功能清单、Steering、Kill Switch、状态校验与检查点。离线示例：`examples/long_running_contract.py`。账本只保存不透明证据引用，不负责运行或核验测试；调用方必须先独立验收。Steering 示例只记录人工备注，不直接改变调度顺序。
 - **27 Coding Agent 实战**：`examples/safe_coding_agent.py` 使用真实 Messages API 的消息契约，提供可离线运行的三轮 Replay；选择性 Live 模式需本机安装 `anthropic` 并自行配置 API Key。模型只可 ReadFile / ProposeEdit，永不执行 Shell 或应用写入。
 - **28 知识图谱与工程验收**：所有章节依赖地图、9 个横切不变量、完整测试/审批/发布门禁和综合实验。
 
