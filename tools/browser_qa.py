@@ -68,7 +68,7 @@ def run(output: Path) -> int:
                         layout = page.evaluate("""() => {
                             const localAnchors = [...document.querySelectorAll('a[href]')]
                                 .map(a => new URL(a.href, location.href))
-                                .filter(u => u.origin === location.origin && u.hash)
+                                .filter(u => u.origin === location.origin && u.pathname === location.pathname && u.hash)
                                 .filter(u => !document.getElementById(decodeURIComponent(u.hash.slice(1))))
                                 .map(u => u.href);
                             return {
