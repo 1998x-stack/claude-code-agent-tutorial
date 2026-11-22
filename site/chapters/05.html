@@ -1,0 +1,36 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="把模型调用、工具执行、并行调度和流式参数组装分开理解，严格核对 tool_use/tool_result 的字段、顺序、失败路径与安全边界。"><title>第05章 · Tool Use 协议：从 JSON Schema 到工具结果 | Claude Code Agent Lab</title><link rel="stylesheet" href="../assets/css/article.css"></head><body><a class="skip" href="#content">跳转至正文</a><header class="masthead"><nav class="topnav wrap" aria-label="站点导航"><a class="brand" href="../index.html">◎ Claude Code · Agent Lab</a><div class="navlinks"><a href="../index.html#chapters">章节目录</a><a href="https://github.com/1998x-stack/claude-code-agent-tutorial">仓库与勘误</a></div></nav></header><div class="lesson-layout"><nav class="lesson-nav" aria-label="本页目录"><strong>第05章 · 本页导航</strong><ol><li><a href="#why">工具调用首先是一份消息协议</a></li><li><a href="#schema">用 JSON Schema 约束参数，而不是信任文本</a></li><li><a href="#transcript">完整消息示例：请求 → 调用 → 结果</a></li><li><a href="#many">多个 tool_use 与并行执行的真正含义</a></li><li><a href="#stream">Streaming 时不要过早解析半个 JSON</a></li><li><a href="#errors">五种失败模式及正确应对</a></li><li><a href="#demo">逐行核验可运行实现</a></li></ol></nav><main id="content" class="lesson"><article><header class="lesson-header"><p class="lesson-meta">CHAPTER 05 / 28 · CODING AGENT ENGINEERING</p><h1>Tool Use 协议：从 JSON Schema 到工具结果</h1><p class="subtitle">把模型调用、工具执行、并行调度和流式参数组装分开理解，严格核对 tool_use/tool_result 的字段、顺序、失败路径与安全边界。</p></header><section id="why" aria-labelledby="why-h"><h2 id="why-h">工具调用首先是一份消息协议</h2><p>模型并不直接执行 Python 函数或 Bash。对于应用侧客户端工具，模型生成描述行动意图的 <code>tool_use</code> 内容块；宿主程序检查参数并执行；随后把结果作为 <code>tool_result</code> 交还模型。把这个区别讲清楚，才能讨论权限、并行和流式输出。</p><figure><div class="diagram-scroll"><img src="../assets/svg/05-contract.svg" width="840" height="426" loading="lazy" alt="从用户输入到 assistant tool_use，再到 user tool_result 的消息顺序和 ID 关联。"></div><figcaption>图 1：工具并不是模型内部魔法；消息内容块与宿主执行器之间存在明确的协议边界。</figcaption></figure></section><section id="schema" aria-labelledby="schema-h"><h2 id="schema-h">用 JSON Schema 约束参数，而不是信任文本</h2><p>每个客户端工具通常包含名称、描述和参数的 <code>input_schema</code>。这让模型知道怎样提出调用请求，但不能替代宿主侧的运行时校验。</p><pre><code>{
+  "name": "add_numbers",
+  "description": "Add two bounded integers",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "a": {"type": "integer"},
+      "b": {"type": "integer"}
+    },
+    "required": ["a", "b"],
+    "additionalProperties": false
+  }
+}</code></pre><p>为什么加 <code>additionalProperties: false</code>？是为了避免无意接受多余的字段；但模型仍可能给出越界数值或不符合业务规则的值。宿主侧仍要检查权限、类型、大小、速率与作用域。工具描述帮助模型选择，而不是访问控制列表。</p></section><section id="transcript" aria-labelledby="transcript-h"><h2 id="transcript-h">完整消息示例：请求 → 调用 → 结果</h2><p>下面展示的是经过简化的客户端工具消息形状，省略了与机制无关的 API 元信息。<code>tool_use_id</code> 必须与对应调用的 <code>id</code> 一致：</p><pre><code>// ① user message
+{"role": "user", "content": "Add 7 and 5"}
+
+// ② assistant response, stop_reason="tool_use"
+{"role": "assistant", "content": [
+  {"type": "tool_use", "id": "toolu_demo_01",
+   "name": "add_numbers", "input": {"a": 7, "b": 5}}
+]}
+
+// ③ immediately following user message
+{"role": "user", "content": [
+  {"type": "tool_result", "tool_use_id": "toolu_demo_01",
+   "content": "12", "is_error": false}
+]}
+
+// ④ next assistant response may contain a final text answer</code></pre><p>示意 ID 仅用于解释字段，实际请求应原样转发 API 返回的 ID。每个 assistant 工具调用块都必须有对应的结果，执行失败时应返回带 <code>is_error</code> 的结果而非丢弃。</p></section><section id="many" aria-labelledby="many-h"><h2 id="many-h">多个 tool_use 与并行执行的真正含义</h2><p>同一次 assistant 消息可以包含多个工具调用。<strong>多块调用</strong>只表明模型提出了多个请求；具体是顺序执行还是并发执行，由客户端工具的宿主调度和依赖关系决定。两个互不影响的只读查询适合并发；写入同一文件的两次操作则可能需要串行化或冲突处理。</p><figure><div class="diagram-scroll"><img src="../assets/svg/05-parallel.svg" width="840" height="426" loading="lazy" alt="assistant 返回两个工具调用，工具分别执行并汇总结果，形成一条 user 消息。"></div><figcaption>图 2：并行是一种调度选择；结果收集仍必须覆盖所有工具 ID，避免消息不匹配。</figcaption></figure><div class="callout warning"><h3>不要把所有工具都无脑并行</h3><p>若两个工具访问同一可变资源，调度器必须处理依赖、冲突、幂等性和失败回滚。仅在操作互相独立、可被批准且副作用可控时才考虑并发。</p></div></section><section id="stream" aria-labelledby="stream-h"><h2 id="stream-h">Streaming 时不要过早解析半个 JSON</h2><p>启用 Streaming 后，<code>tool_use</code> 的内容可能随多个增量事件逐步出现。客户端要按协议跟踪消息与内容块边界，将参数片段累积为完整的工具输入，等结构完整且校验通过后再考虑执行。不能看到一个尚未结束的 JSON 字符串，就把它当作已被验证的参数。</p><pre><code>// 教学用状态机，不是特定 SDK 的事件枚举
+state = WAIT_FOR_BLOCK
+on_tool_block_start: state = ACCUMULATING_INPUT
+on_input_delta: append_to_buffer(delta)
+on_tool_block_end:
+    parsed = parse_complete_json(buffer)
+    validated = validate_schema(parsed)
+    state = READY_FOR_POLICY_CHECK
+after_approval: dispatch(validated)</code></pre><p>具体事件名称、增量格式和异常处理应以所使用 SDK 的官方 Streaming 文档为准。教学状态机强调<strong>完成后验证、验证后授权、授权后执行</strong>的顺序。</p></section><section id="errors" aria-labelledby="errors-h"><h2 id="errors-h">五种失败模式及正确应对</h2><div class="table-scroll"><table><thead><tr><th>失败</th><th>错误做法</th><th>建议策略</th></tr></thead><tbody><tr><td>工具名不存在</td><td>静默跳过</td><td>返回相应 ID 的错误结果</td></tr><tr><td>参数不符合 Schema</td><td>尝试猜测补齐</td><td>返回明确校验错误或要求重试</td></tr><tr><td>执行超时</td><td>无限等待</td><td>取消任务、报告超时、记录是否可重试</td></tr><tr><td>副作用越权</td><td>仅凭模型决定执行</td><td>权限策略拒绝或请求人工确认</td></tr><tr><td>模型输出截断</td><td>把不完整内容当成功</td><td>识别停止原因并显式处理</td></tr></tbody></table></div><p>一个可靠的 Harness 应能在这些场景下重建协议状态。失败反馈可以帮助模型理解现状，但不能将高风险操作权限交给模型自动扩大。</p></section><section id="demo" aria-labelledby="demo-h"><h2 id="demo-h">逐行核验可运行实现</h2><p>阅读本仓库 <a href="https://github.com/1998x-stack/claude-code-agent-tutorial/blob/refactor/olah-pages-first-five-20261122/examples/mini_agent.py">mini_agent.py</a> 的 <code>run_agent()</code>，重点核对四个不变量：原始 assistant 内容保留完整、一次 tool_use 对应一条含多个结果的 user 消息、未知工具必须返回错误、非正常停止不得当作完成。</p><pre><code>python3 -m unittest discover -s examples -p 'test_*.py'</code></pre><p>这份离线测试通过模拟多工具响应验证消息顺序，并拒绝越界参数，不需要真实 API。若将加法工具改为文件写入工具，必须新增工作区边界、审批和可恢复操作测试。</p><div class="exercise"><strong>练习：</strong>模拟两个 <code>tool_use</code>，其中第二个工具不存在。检查返回的 <code>user.content</code> 仍包含两条结果、后一条 <code>is_error=true</code>，下一轮能够继续执行而不是产生协议缺口。</div></section><section id="references" aria-labelledby="refs-h"><h2 id="refs-h">参考资料与证据边界</h2><ol class="refs"><li><a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview">Claude Platform: tool use overview</a> — 客户端工具与服务端工具的范围</li><li><a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/how-tool-use-works">Claude Platform: how tool use works</a> — tool_use / tool_result 的核心消息结构</li><li><a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/handle-tool-calls">Claude Platform: handle tool calls</a> — 并发工具、错误结果和协议约束</li><li><a href="https://platform.claude.com/docs/en/build-with-claude/streaming">Claude Platform: streaming messages</a> — 流式事件及增量内容块处理</li></ol><p class="figure-note">文中的架构分层、控制流与图示是针对公开能力的教学设计；未公开的 Claude Code 内部实现细节不由这些示意图推定。</p></section><nav class="lesson-pager" aria-label="章节切换"><a href="04.html">← 第4章</a><a href="06.html">第6章 →</a></nav></article></main></div></body></html>
