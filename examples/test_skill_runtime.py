@@ -96,6 +96,8 @@ class SkillRuntimeTests(unittest.TestCase):
             catalog.invoke("forked", "user")
         with self.assertRaises(ValueError):
             catalog.invoke("review", "system")
+        with self.assertRaises(ValueError):
+            catalog.invoke("review", [])
 
 
 if __name__ == "__main__":

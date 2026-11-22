@@ -35,6 +35,10 @@ class GatewayTests(unittest.TestCase):
         req = ToolRequest("Edit", {"path": "a.md", "approved": True})
         self.assertEqual(self.gate.evaluate(req)[0], "ask")
 
+    def test_malformed_approval_is_denied_without_type_errors(self):
+        malformed = Approval(self.req.fingerprint(), "user", [])
+        self.assertEqual(self.gate.evaluate(self.req, malformed)[0], "deny")
+
     def test_unknown_tool_and_malformed_request_are_denied(self):
         self.assertEqual(self.gate.evaluate(ToolRequest("RootShell", {}))[0], "deny")
         self.assertEqual(self.gate.evaluate(object())[0], "deny")

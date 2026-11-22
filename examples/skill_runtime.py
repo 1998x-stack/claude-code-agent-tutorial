@@ -160,7 +160,7 @@ class SkillCatalog:
         raise ValueError("caller must be 'user' or 'model'")
 
     def invoke(self, name: str, caller: str) -> SkillDocument:
-        if caller not in {"user", "model"}:
+        if not isinstance(caller, str) or caller not in {"user", "model"}:
             raise ValueError("caller must be 'user' or 'model'")
         metadata, body = self._read(name)
         allowed = metadata.user_invocable if caller == "user" else not metadata.disable_model_invocation

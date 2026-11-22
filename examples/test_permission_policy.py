@@ -39,6 +39,8 @@ class PermissionTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             Policy(mode="automatic")
         with self.assertRaises(ValueError):
+            Policy(mode=[])
+        with self.assertRaises(ValueError):
             Policy(allow=frozenset({"RootShell"}))
         with self.assertRaises(ValueError):
             Policy(deny={"Write"})
