@@ -86,8 +86,11 @@ class SkillRuntimeTests(unittest.TestCase):
         write_skill(self.root, "forked",
                     "name: forked\ndescription: Fork\ncontext: shared")
         catalog = SkillCatalog(self.root)
+        write_skill(self.root, "review", "name: review\ndescription: Review")
         with self.assertRaises(ValueError):
-            catalog.invoke("forked", "system")
+            catalog.invoke("forked", "user")
+        with self.assertRaises(ValueError):
+            catalog.invoke("review", "system")
 
 
 if __name__ == "__main__":

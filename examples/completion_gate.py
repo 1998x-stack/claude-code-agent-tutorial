@@ -49,11 +49,10 @@ class CompletionGate:
     def decide(self) -> str:
         if self.human_decision is False:
             return "blocked"
-        if self.steps >= self.contract.max_steps:
-            return "budget_exhausted"
-        if any(name not in self.checks or not self.checks[name].passed
-               for name in self.contract.required_checks):
-            return "continue"
+        incomplete = any(name not in self.checks or not self.checks[name].passed
+                          for name in self.contract.required_checks)
+        if incomplete:
+            return "budget_exhausted" if self.steps >= self.contract.max_steps else "continue"
         if self.contract.requires_human_approval and self.human_decision is not True:
             return "await_approval"
         return "ready"
