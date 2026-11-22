@@ -1,7 +1,7 @@
 {
   "title": "Claude Code 与 Coding Agent Harness：图解技术教程",
   "emoji": "🤖",
-  "subtitle": "28章，前25章完成精修，后3章待复审",
+  "subtitle": "28章全部完成技术精修；图解、离线示例与分层质量门禁",
   "chapterCount": 28,
   "chapters": [
     {
@@ -281,38 +281,38 @@
     },
     {
       "num": "26",
-      "title": "前沿趋势：Long-Running Agents",
+      "title": "Long-Running Agents：跨会话交接、独立验收与安全中止",
       "topics": [
-        "Default-FAIL契约",
-        "Fresh-Context Evaluator",
-        "Kill Switch/Steering",
-        "Meta-Harness"
+        "Initializer / Coding Sessions",
+        "Feature 默认失败与证据",
+        "Steering / Kill Switch",
+        "检查点与恢复"
       ],
       "file": "chapters/26.html"
     },
     {
       "num": "27",
-      "title": "实战：搭建完整 Coding Agent",
+      "title": "实战：构建可审计的 Coding Agent，从 Tool Use 到补丁预览",
       "topics": [
-        "10步模块集成",
-        "CLI交互界面",
-        "配置系统",
-        "端到端演示"
+        "Messages API 工具循环",
+        "只读 Workspace / Diff",
+        "离线 Replay 与可选 API",
+        "独立验收门禁"
       ],
       "file": "chapters/27.html"
     },
     {
       "num": "28",
-      "title": "总结与展望",
+      "title": "知识图谱与工程验收：从 Agent Loop 到可审计的交付系统",
       "topics": [
-        "28章知识图谱",
-        "9大架构模式速查",
-        "进阶学习方向",
-        "Agent工程师素养"
+        "28 章依赖图谱",
+        "九个核心工程约束",
+        "质量门禁与故障注入",
+        "综合项目与进阶路径"
       ],
       "file": "chapters/28.html"
     }
   ],
-  "refinedChapters": 25,
-  "legacyPendingReview": 3
+  "refinedChapters": 28,
+  "legacyPendingReview": 0
 }

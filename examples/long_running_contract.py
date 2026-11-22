@@ -79,13 +79,15 @@ class FeatureLedger:
         raise KeyError(ident)
 
     def next_feature(self) -> Feature | None:
-        if self.stopped:
+        if self.stopped or any(f.status == "blocked" for f in self.features):
             return None
         return next((f for f in self.features if f.status in {"pending", "in_progress"}), None)
 
     def start(self, ident: str) -> None:
         if self.stopped:
             raise PermissionError("kill switch is engaged")
+        if any(f.status == "blocked" for f in self.features):
+            raise RuntimeError("blocked feature requires external review")
         item = self._get(ident)
         if item.status not in {"pending", "in_progress"}:
             raise ValueError("only pending or active work can start")
