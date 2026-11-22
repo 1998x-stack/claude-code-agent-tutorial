@@ -22,7 +22,7 @@ Tutorial code is not production-safe unless explicitly engineered and tested so.
 
 ## Maintenance
 Chapter slugs `01`–`28` are stable. New chapters 06–10 use guarded workspace tools, layered prompts, event state machines, dependency DAGs and checkpoint budgeting. Preserve root and site redirects for old URLs. Update `site/courses.json`, homepage and links when changing chapter titles.
-Original chapters 01–25 archived at `archive/initial/`. Chapters 01–25 are refined; chapters 26–28 remain legacy and need technical review.
+Original chapters 01–28 archived at `archive/initial/`. All 28 chapters are refined; future updates still require versioned source audits.
 Run `python3 tools/validate_site.py`, offline unit tests, and browser checks at 1440/768/390/360 with JS errors, horizontal overflow, figures, keyboard focus and nav if tooling permits. Record skipped browser steps, do not invent QA status.
 Publish `site/` using GitHub Pages Actions workflow; confirm deployment rather than assuming.
 
@@ -47,3 +47,12 @@ Publish `site/` using GitHub Pages Actions workflow; confirm deployment rather t
 - Observability should correlate `trace_id`, `span_id`, `request_id` and `tool_use_id`. Distinguish tool decisions from executed tool results; default to excluding raw prompts, tool arguments, results, secrets and source code.
 - Performance claims require a pinned model/version, fixed task set, repeated measurements, quality threshold, P50/P95 latency and real usage/cost fields. Do not reuse fixed cache hit-rate or price claims.
 - Plugin and MCP marketplace entries are not security guarantees. Review license, pinned version, hooks, scripts, binaries, MCP servers, network egress, data handling and update policy.
+
+## Long-running, integrated coding and acceptance
+- Source Anthropic’s 2025 initializer/coding-session experiment and 2026 planner/generator/evaluator study precisely. Never describe them as guaranteed internal Claude Code implementation layers.
+- Session resume preserves conversation; worktree files, Git commits, evaluator reports, and checkpoints remain separate state carriers. Checkpoint hashes detect accidental modification, not adversarial forgery or identity.
+- A long-run feature begins not passed. Only evidence-bearing external evaluation may mark passed. State an actor-string in teaching code is NOT secure identity verification; production requires authenticated authorization.
+- Kill switch and Steering are app-control contracts; cancellation must reach actual subprocesses, jobs, and external workers, not just toggle a Python boolean.
+- The minimal integrated sample accepts only ReadFile and ProposeEdit. Never grant shell or filesystem writes based on model output. If optional live mode is mentioned, it needs explicit user credentials and workspace and is not covered by CI.
+- `model_ended_not_verified` means the Messages API turn finished, not that changes were applied or tested. External check and human approval are distinct required gates.
+- Homepage, canonical chapter metadata, README, archived originals, static validation, and browser screenshots must remain synchronized. Browser coverage: homepage + 28 chapters × 1440/768/390/360 = 116 views.
