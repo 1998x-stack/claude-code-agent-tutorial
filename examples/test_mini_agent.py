@@ -20,7 +20,7 @@ class FakeClient:
         self.messages = NS(create=self.create)
 
     def create(self, **kwargs):
-        self.calls.append(kwargs)
+        self.calls.append({**kwargs, 'messages': [m.copy() for m in kwargs['messages']]})
         return next(self.responses)
 
 
