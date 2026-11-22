@@ -1,0 +1,39 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="如何在不依赖未授权逆向或未经证实的内部源码前提下，安装工具、观察公开行为、记录证据，并让技术结论真正可复核。"><meta name="keywords" content="Claude Code CLI,研究方法,证据,可复现实验,安全开发环境"><title>第02章 · 建立可靠的 Claude Code 研究环境 | Claude Code Agent Lab</title><link rel="stylesheet" href="../assets/css/article.css"></head><body><a href="#content" class="skip">跳转至正文</a><header class="masthead"><nav class="topnav wrap" aria-label="站点导航"><a class="brand" href="../index.html">◎ Claude Code · Agent Lab</a><div class="navlinks"><a href="../index.html#chapters">章节目录</a><a href="https://github.com/1998x-stack/claude-code-agent-tutorial">勘误与源码</a></div></nav></header><div class="lesson-layout"><nav class="lesson-nav" aria-label="本章目录"><strong>第02章 · 本页导航</strong><ol><li><a href="#problem">核心问题：一个屏幕现象能证明什么</a></li><li><a href="#setup">准备最小可复现环境</a></li><li><a href="#evidence">建立版本化研究记录</a></li><li><a href="#methods">三条研究路径：官方文档、黑盒试验与自建实现</a></li><li><a href="#experiment">做一个无需模型调用的安全实验</a></li><li><a href="#traps">最容易出现的四类错误</a></li><li><a href="#exercise">练习：把一句断言改写成可证伪问题</a></li></ol></nav><main id="content" class="lesson"><article><header class="lesson-header"><p class="lesson-meta">CHAPTER 02 / 28 · CODING AGENT ENGINEERING</p><h1>建立可靠的 Claude Code 研究环境</h1><p class="subtitle">如何在不依赖未授权逆向或未经证实的内部源码前提下，安装工具、观察公开行为、记录证据，并让技术结论真正可复核。</p></header><section id="problem" aria-labelledby="problem-h"><h2 id="problem-h">核心问题：一个屏幕现象能证明什么</h2><p>当 CLI 终端显示某次工具调用时，我们能够知道<strong>发生了什么输入与输出</strong>；但不必然知道程序内部具体调用了哪个私有函数、采用多少层队列或某个阈值是多少。把界面现象直接写成“源码实现”会使读者获得虚假的确定性。</p><figure><div class="diagram-scroll"><img src="../assets/svg/02-evidence.svg" width="840" height="426" loading="lazy" alt="官方公开契约、可观察行为和教学设计三个证据层级。"></div><figcaption>图 1：证据强弱不是价值高低；它们回答的问题不同，不能跨层越权推断。</figcaption></figure><p>本章建立的研究方法只使用公开文档、开发者自己有权访问的 CLI 工作区、明确授权的日志与公开 API 示例。</p></section>
+<section id="setup" aria-labelledby="setup-h"><h2 id="setup-h">准备最小可复现环境</h2><p>准备 Git、Python 3.10+（用于本课程的离线脚本）以及官方支持的 Claude Code 安装环境。Claude Code 安装命令与平台兼容性会随版本变化，<strong>请从官方 Setup 页面获取当前命令</strong>，不要执行来源不明的 shell 管道。</p><pre><code># 记录已有环境版本（不包含密钥）
+git --version
+python3 --version
+claude --version
+
+# 在独立测试目录里执行，不要在生产仓库上试验
+mkdir -p agent-lab
+cd agent-lab
+git init</code></pre><p>在交互运行 Claude Code 前，阅读所用账户的计费、认证与权限提示。测试用仓库应是不含客户数据、私有凭证和生产部署密钥的空目录。</p><div class="callout warning"><h3>不要把安装验证变成安全漏洞</h3><p>不向网页、聊天记录或测试报告粘贴 API Key，不关闭权限检查来“方便学习”，也不把生产目录挂载进陌生的 Agent 测试流程。</p></div></section>
+<section id="evidence" aria-labelledby="evidence-h"><h2 id="evidence-h">建立版本化研究记录</h2><p>一次能够被别人检验的试验，至少说明：运行环境、公开操作、预期输出、实际输出以及结论适用的版本。还要写出<strong>替代解释</strong>：同样的输出是否可能来自不同内部实现？</p><figure><div class="diagram-scroll"><img src="../assets/svg/02-experiment.svg" width="840" height="426" loading="lazy" alt="实验沿着环境、操作、输出、证据记录的四级链条。"></div><figcaption>图 2：黑盒研究必须留下可复核的操作链，而不是只截取一张没有版本的终端截图。</figcaption></figure><pre><code># examples/observation-log.md（填写自己的实际结果）
+## Environment
+- OS:
+- Claude CLI version:
+- Date:
+- Workspace: temporary empty Git repository
+
+## Question
+What public behavior is being tested?
+
+## Steps
+1. Record CLI version
+2. Perform an approved, non-destructive operation
+3. Capture only non-sensitive output
+
+## Observation
+[record actual output; no secrets]
+
+## Interpretation
+Supported claim:
+Alternative explanation:
+Unknown internal details:</code></pre></section>
+<section id="methods" aria-labelledby="methods-h"><h2 id="methods-h">三条研究路径：官方文档、黑盒试验与自建实现</h2><div class="table-scroll"><table><thead><tr><th>路径</th><th>回答什么</th><th>不能推出什么</th></tr></thead><tbody><tr><td>官方文档与 SDK</td><td>公开协议、参数、约束与支持方式</td><td>任一私有实现的全部细节</td></tr><tr><td>授权环境的行为观察</td><td>某版本在特定输入下的可见结果</td><td>唯一的代码结构或不变量</td></tr><tr><td>自行实现最小 Harness</td><td>哪些设计足以产生相似行为</td><td>官方产品一定采用同样实现</td></tr></tbody></table></div><p>“能通过 API 搭建一个类似系统”不等于“已恢复 Claude Code 原始源码”。此后章节把这三类内容分开叙述。</p></section>
+<section id="experiment" aria-labelledby="experiment-h"><h2 id="experiment-h">做一个无需模型调用的安全实验</h2><p>先验证本仓库的本地浏览与静态资源路径，不需要付费 API，也不会执行自动代码修改：</p><pre><code>git clone https://github.com/1998x-stack/claude-code-agent-tutorial.git
+cd claude-code-agent-tutorial
+python3 -m http.server 8000
+# 浏览器打开 http://localhost:8000/site/</code></pre><p>另开终端执行 <code>python3 tools/validate_site.py</code>。输出是结构检查结果（链接、HTML、SVG），不是对 Claude Code 内部实现的测试。这是<strong>测试对象边界</strong>的第一课。</p></section>
+<section id="traps" aria-labelledby="traps-h"><h2 id="traps-h">最容易出现的四类错误</h2><ol><li><strong>版本错位：</strong>拿数月前的模型 ID、CLI 标志或权限模式解释最新文档。</li><li><strong>把推测写成源码：</strong>根据一个外部行为推断固定内部变量或特定函数名称。</li><li><strong>采样偏差：</strong>只保存成功的样例，没有记录失败、重试和特殊权限。</li><li><strong>越界收集：</strong>未获得授权就抓取第三方账户日志、内部包或凭证。</li></ol><div class="callout"><h3>研究记录模板的最低验收条件</h3><p>同一个人换一台机器，按你的步骤能够验证公开行为或明确定位差异；无法复现时，将结论降级为假设而不是添加“内部可能”之类的定论。</p></div></section>
+<section id="exercise" aria-labelledby="exercise-h"><h2 id="exercise-h">练习：把一句断言改写成可证伪问题</h2><div class="exercise"><strong>练习：</strong>将“Claude Code 一定使用固定的 N 层 Prompt”和“工具调用总是串行执行”改为可以通过公开文档或授权实验检验的问题。为每个问题列出版本、操作步骤、预期证据、失败时的替代解释。</div><p>你现在具备了贯穿全书的研究边界。下一章开始用公开 Messages API 构建一个我们可以完整查看源码的最小 Agent Loop。</p></section><section id="further-reading" aria-labelledby="further-reading-h"><h2 id="further-reading-h">参考资料与证据边界</h2><ol class="refs"><li><a href="https://code.claude.com/docs/en/setup">Claude Code 官方安装与配置说明</a> — 安装、认证和不同环境要求以官方步骤为准</li><li><a href="https://code.claude.com/docs/en/settings">Claude Code 设置与权限</a> — 配置层级与权限的官方说明</li><li><a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview">Claude Platform Tool Use</a> — 公开可核查的工具调用接口</li><li><a href="https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages">GitHub Pages Actions 文档</a> — 静态技术文档的发布与验证</li></ol><p class="figure-note">本文将公开接口和公开行为视为可核查证据；凡涉及自建 Harness 的结构与代码，均是教学设计，并非 Claude Code 私有源码的逐行还原。</p></section><nav class="lesson-pager" aria-label="章节切换"><a href="01.html">← 第1章</a><a href="03.html">第3章 →</a></nav></article></main></div></body></html>
