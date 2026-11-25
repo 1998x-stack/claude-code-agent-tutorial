@@ -22,7 +22,7 @@ Tutorial code is not production-safe unless explicitly engineered and tested so.
 
 ## Maintenance
 Chapter slugs `01`–`28` are stable. New chapters 06–10 use guarded workspace tools, layered prompts, event state machines, dependency DAGs and checkpoint budgeting. Preserve root and site redirects for old URLs. Update `site/courses.json`, homepage and links when changing chapter titles.
-Original chapters 01–20 archived at `archive/initial/`. Chapters 01–20 are refined; chapters 21–28 remain legacy and need technical review.
+Original chapters 01–20 archived at `archive/initial/`. All canonical chapters 01–28 are refined against public sources; re-verify version-sensitive claims (permission modes, MCP eras, cache fields) whenever the upstream docs change.
 Run `python3 tools/validate_site.py`, offline unit tests, and browser checks at 1440/768/390/360 with JS errors, horizontal overflow, figures, keyboard focus and nav if tooling permits. Record skipped browser steps, do not invent QA status.
 Publish `site/` using GitHub Pages Actions workflow; confirm deployment rather than assuming.
 
