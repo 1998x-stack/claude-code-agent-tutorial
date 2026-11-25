@@ -54,7 +54,7 @@ class WorkspaceTests(unittest.TestCase):
 
     def test_no_shell_execution(self):
         self.assertEqual(self.ws.bash_preview("ls"), "")
-        self.assertEqual(self.ws.bash_preview("pwd"), str(self.root))
+        self.assertEqual(self.ws.bash_preview("pwd"), str(self.ws.root))
         for command in ("ls -la", "echo hi", "pwd; rm -rf .", "cat .env"):
             with self.assertRaises(ToolError):
                 self.ws.bash_preview(command)
