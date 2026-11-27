@@ -20,29 +20,40 @@ class MCPProtocolTests(unittest.TestCase):
             request("initialize", 1)
 
     def test_correlate_id_and_result_type(self):
-        msg = {"jsonrpc":"2.0","id":3,"result":{
-            "resultType":"complete","tools":[]}}
+        msg = {"jsonrpc": "2.0", "id": 3, "result": {
+            "resultType": "complete", "tools": []}}
         self.assertEqual(parse_response(msg, 3)["tools"], [])
         with self.assertRaises(ValueError):
             parse_response(msg, 4)
         with self.assertRaises(ValueError):
-            parse_response({"jsonrpc":"2.0","id":3,"result":{"tools":[]}}, 3)
+            parse_response({"jsonrpc": "2.0", "id": 3, "result": {"tools": []}}, 3)
 
     def test_input_required_is_not_completion(self):
-        msg = {"jsonrpc":"2.0","id":11,"result":{
-            "resultType":"input_required","inputRequests":{}}}
+        msg = {"jsonrpc": "2.0", "id": 11, "result": {
+            "resultType": "input_required", "inputRequests": {}}}
         self.assertEqual(parse_response(msg, 11)["resultType"], "input_required")
 
     def test_error_and_injection_boundaries(self):
         with self.assertRaises(ValueError):
             request("tools/list", 3, {"_meta": {"fake": "yes"}})
+        with self.assertRaises(ValueError):
+            request("tools/list", True)
+        with self.assertRaises(ValueError):
+            request("tools/list", 3, [["not", "an object"]])
         with self.assertRaisesRegex(ValueError, "JSON-RPC error"):
-            parse_response({"jsonrpc":"2.0","id":5,"error":{
-                "code":-32022,"message":"Unsupported protocol version"}}, 5)
+            parse_response({"jsonrpc": "2.0", "id": 5, "error": {
+                "code": -32022, "message": "Unsupported protocol version"}}, 5)
+        with self.assertRaises(ValueError):
+            parse_response({"jsonrpc": "2.0", "id": True, "result": {}}, 1)
+        with self.assertRaises(ValueError):
+            parse_response({"jsonrpc": "2.0", "id": 5, "error": {
+                "code": True, "message": "bad"}}, 5)
         line = stdio_line(request("tools/call", 2, {
             "name": "echo", "arguments": {"text": "hello\\nworld"}}))
         self.assertEqual(json.loads(line)["id"], 2)
         self.assertEqual(line.count("\n"), 1)
+        with self.assertRaises(ValueError):
+            stdio_line({"value": float("nan")})
 
 
 if __name__ == "__main__":

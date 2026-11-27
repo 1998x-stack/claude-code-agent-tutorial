@@ -22,23 +22,28 @@ class GatewayTests(unittest.TestCase):
         self.assertEqual(self.gate.evaluate(changed, self.token())[0], "deny")
 
     def test_denial_overrides_confirmation(self):
-        gate = PermissionGateway(Policy(
-            deny=frozenset({"Edit"}), ask=frozenset({"Edit"})
-        ))
+        gate = PermissionGateway(Policy(deny=frozenset({"Edit"}), ask=frozenset({"Edit"})))
         self.assertEqual(gate.evaluate(self.req, self.token())[0], "deny")
 
     def test_refused_and_missing_identity(self):
-        self.assertEqual(self.gate.evaluate(self.req,
-             Approval(self.req.fingerprint(), "user", "deny"))[0], "deny")
-        self.assertEqual(self.gate.evaluate(self.req,
-             Approval(self.req.fingerprint(), "", "approve"))[0], "deny")
+        self.assertEqual(self.gate.evaluate(
+            self.req, Approval(self.req.fingerprint(), "user", "deny"))[0], "deny")
+        self.assertEqual(self.gate.evaluate(
+            self.req, Approval(self.req.fingerprint(), "", "approve"))[0], "deny")
 
     def test_model_supplied_approval_not_used(self):
         req = ToolRequest("Edit", {"path": "a.md", "approved": True})
         self.assertEqual(self.gate.evaluate(req)[0], "ask")
 
-    def test_unknown_tool_is_deny(self):
+    def test_malformed_approval_is_denied_without_type_errors(self):
+        malformed = Approval(self.req.fingerprint(), "user", [])
+        self.assertEqual(self.gate.evaluate(self.req, malformed)[0], "deny")
+
+    def test_unknown_tool_and_malformed_request_are_denied(self):
         self.assertEqual(self.gate.evaluate(ToolRequest("RootShell", {}))[0], "deny")
+        self.assertEqual(self.gate.evaluate(object())[0], "deny")
+        with self.assertRaises(ValueError):
+            ToolRequest("Edit", {"score": float("nan")}).fingerprint()
 
 
 if __name__ == "__main__":

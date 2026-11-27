@@ -29,7 +29,7 @@ Publish `site/` using GitHub Pages Actions workflow; confirm deployment rather t
 ## Skills and instructions, version scope
 - The canonical cross-tool guide is AGENTS.md. CLAUDE.md imports it for Claude Code compatibility; do not create a second conflicting manual.
 - AGENTS.md auto-loading is version- and configuration-dependent. Read https://code.claude.com/docs/en/memory before declaring it loaded automatically.
-- Claude Code skill frontmatter `allowed-tools` can preapprove named tools during the invocation turn, subject to policy. Do not treat arbitrary skill text as permission; in the offline SkillCatalog, executable/permission fields are deliberately ignored.
+- Claude Code skill frontmatter `allowed-tools` can preapprove named tools during the invocation turn, subject to policy. The offline SkillCatalog may parse this field as metadata but must never turn it into real tool grants or execute skill body text.
 - Subagent context isolation is not an OS sandbox. Authorization must be independently checked at execution time.
 - Permission modes are version-sensitive; do not hardcode "seven modes" or assume auto/classifier is universally available.
 
@@ -39,3 +39,30 @@ Publish `site/` using GitHub Pages Actions workflow; confirm deployment rather t
 - Modern MCP 2026 standard transports are stdio and Streamable HTTP; Claude Code product can support additional legacy SSE or WebSocket server options. State scope precisely.
 - Bash sandbox is OS-enforced, not emulated by regex/string filtering. Teaching code must not execute arbitrary model shell commands. Document non-sandbox retry risks and true OS-level test requirements.
 - Prompt caching does not decrease context-window occupancy. Record actual usage cache fields; no fixed prefix hit rates without reproducible evidence.
+
+## Skills, Harness, Observability and Ecosystem
+- Do not invent `triggers`, `priority`, automatic Evict heuristics or fixed skill-token budgets as official Claude Code Skills behavior. Use current official frontmatter and distinguish `disable-model-invocation` from `user-invocable`.
+- Invoked Skill body can remain in conversation context; `allowed-tools` is turn-scoped. `context: fork` is a separate subagent context, not an OS sandbox.
+- Completion must be evidence-based: required checks, artifacts, bounded steps, and human approval for side effects. Do not infer success from words like `done` or model stop markers alone.
+- Observability should correlate `trace_id`, `span_id`, `request_id` and `tool_use_id`. Distinguish tool decisions from executed tool results; default to excluding raw prompts, tool arguments, results, secrets and source code.
+- Performance claims require a pinned model/version, fixed task set, repeated measurements, quality threshold, P50/P95 latency and real usage/cost fields. Do not reuse fixed cache hit-rate or price claims.
+- Plugin and MCP marketplace entries are not security guarantees. Review license, pinned version, hooks, scripts, binaries, MCP servers, network egress, data handling and update policy.
+
+## Long-running, integrated coding and acceptance
+- Source Anthropic’s 2025 initializer/coding-session experiment and 2026 planner/generator/evaluator study precisely. Never describe them as guaranteed internal Claude Code implementation layers.
+- Session resume preserves conversation; worktree files, Git commits, evaluator reports, and checkpoints remain separate state carriers. Checkpoint hashes detect accidental modification, not adversarial forgery or identity.
+- A long-run feature begins not passed. The teaching ledger stores an opaque evidence reference and only checks its shape; it does NOT dereference reports or run tests. The caller must independently verify evidence before recording a verdict. An actor string is NOT identity authentication; production requires authenticated authorization.
+- The teaching Steering method only appends an audit note; it does not change scheduler order or task constraints unless a separate planner consumes the note and updates a versioned contract. The ledger is single-writer and fail-stops the project when any feature is blocked.
+- Kill switch and Steering are app-control contracts; cancellation must reach actual subprocesses, jobs, and external workers, not just toggle a Python boolean.
+- The minimal integrated sample accepts only ReadFile and ProposeEdit. Never grant shell or filesystem writes based on model output. If optional live mode is mentioned, it needs explicit user credentials and workspace and is not covered by CI.
+- `model_ended_not_verified` means the Messages API turn finished, not that changes were applied or tested. External check and human approval are distinct required gates.
+- Homepage, canonical chapter metadata, README, archived originals, static validation, and browser screenshots must remain synchronized. Browser coverage: homepage + 28 chapters × 1440/768/390/360 = 116 views.
+
+## Cross-platform security review
+- Workspace paths must reject POSIX and Windows absolute/drive paths, alternate data streams, control characters, symlinks, and case-folded sensitive names. Bound actual bytes read, not only a prior stat.
+- Read-only permission policy is a fixed Read/Grep allowlist. Never let user configuration relabel Write/Edit/Shell as safe reads. Approval flags must be exact booleans.
+- ApprovalGateway labels such as approved_by are not authentication or signatures. Its replay set is in-memory and process-local; production requires authenticated host UI, durable atomic nonce consumption and expiry/revocation.
+- SandboxManifest is only preflight metadata; it never enforces an OS boundary. Validate boolean types, hostnames and cross-platform paths, then enforce with a real sandbox.
+- Skill supporting-file readers reject Windows drive/backslash/ADS paths, traversal, symlinks and over-limit reads; parser supports a subset of YAML only.
+- MCP modern 2026-07-28 results require resultType complete/input_required. Keep strict numeric IDs/error codes and never accept bool as int. This sample is not a transport or full MRTR driver.
+- Handoff/checkpoint SHA-256 detects accidental corruption only; no authenticity. Bound reads, reject duplicate JSON keys, and revalidate workspace revision before resuming.

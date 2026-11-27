@@ -42,11 +42,12 @@ class WorkspaceTests(unittest.TestCase):
         )[1])
         self.assertEqual(self.ws.read("dupe.txt"), "x x")
 
-    def test_blocks_sensitive_and_escape_paths(self):
-        for path in ("../escape", "/tmp/external", ".git/config", ".env", ".env.local"):
-            with self.subTest(path=path):
-                with self.assertRaises(ToolError):
-                    self.ws.target(path)
+    def test_blocks_sensitive_escape_windows_and_control_paths(self):
+        for path in ("../escape", "/tmp/external", ".git/config", ".env", ".env.local",
+                     ".GIT/config", ".ENV", ".SSH/id_rsa", "C:/Windows/win.ini",
+                     "C:relative.txt", "file.txt:secret", "bad\nname.txt"):
+            with self.subTest(path=path), self.assertRaises(ToolError):
+                self.ws.target(path)
         self.assertTrue(self.ws.dispatch("Read", {"path": "../outside"})[1])
         (self.root / "link").symlink_to(self.root.parent, target_is_directory=True)
         with self.assertRaises(ToolError):
@@ -61,6 +62,7 @@ class WorkspaceTests(unittest.TestCase):
 
     def test_rejects_unknown_and_extra_arguments(self):
         self.assertTrue(self.ws.dispatch("Shell", {"command": "ls"})[1])
+        self.assertTrue(self.ws.dispatch([], {"command": "ls"})[1])
         self.assertTrue(self.ws.dispatch("Read", {"path": "a", "ignored": "x"})[1])
         self.assertTrue(self.ws.dispatch("Write", "not-a-dict", approved=True)[1])
 
