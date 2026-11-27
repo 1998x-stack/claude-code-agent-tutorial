@@ -30,7 +30,7 @@ What public behavior is being tested?
 Supported claim:
 Alternative explanation:
 Unknown internal details:</code></pre></section>
-<section id="methods" aria-labelledby="methods-h"><h2 id="methods-h">三条研究路径：官方文档、黑盒试验与自建实现</h2><div class="table-scroll"><table><thead><tr><th>路径</th><th>回答什么</th><th>不能推出什么</th></tr></thead><tbody><tr><td>官方文档与 SDK</td><td>公开协议、参数、约束与支持方式</td><td>任一私有实现的全部细节</td></tr><tr><td>授权环境的行为观察</td><td>某版本在特定输入下的可见结果</td><td>唯一的代码结构或不变量</td></tr><tr><td>自行实现最小 Harness</td><td>哪些设计足以产生相似行为</td><td>官方产品一定采用同样实现</td></tr></tbody></table></div><p>“能通过 API 搭建一个类似系统”不等于“已恢复 Claude Code 原始源码”。此后章节把这三类内容分开叙述。</p></section>
+<section id="methods" aria-labelledby="methods-h"><h2 id="methods-h">三条研究路径：官方文档、黑盒试验与自建实现</h2><div class="table-scroll" role="region" aria-label="数据表，可横向滚动" tabindex="0"><table><thead><tr><th scope="col">路径</th><th scope="col">回答什么</th><th scope="col">不能推出什么</th></tr></thead><tbody><tr><td>官方文档与 SDK</td><td>公开协议、参数、约束与支持方式</td><td>任一私有实现的全部细节</td></tr><tr><td>授权环境的行为观察</td><td>某版本在特定输入下的可见结果</td><td>唯一的代码结构或不变量</td></tr><tr><td>自行实现最小 Harness</td><td>哪些设计足以产生相似行为</td><td>官方产品一定采用同样实现</td></tr></tbody></table></div><p>“能通过 API 搭建一个类似系统”不等于“已恢复 Claude Code 原始源码”。此后章节把这三类内容分开叙述。</p></section>
 <section id="experiment" aria-labelledby="experiment-h"><h2 id="experiment-h">做一个无需模型调用的安全实验</h2><p>先验证本仓库的本地浏览与静态资源路径，不需要付费 API，也不会执行自动代码修改：</p><pre><code>git clone https://github.com/1998x-stack/claude-code-agent-tutorial.git
 cd claude-code-agent-tutorial
 python3 -m http.server 8000
